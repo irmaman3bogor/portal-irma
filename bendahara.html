@@ -4,6 +4,8 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard Akuntansi Bendahara IRMA - MAN 3 Bogor</title>
+  <!-- Library Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
@@ -17,11 +19,13 @@
     .header-right { display: flex; gap: 10px; }
     .btn-logout { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
     .btn-logout:hover { background: #c0392b; }
-    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+    
+    .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
     .tab-btn { padding: 10px 20px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: #555; }
     .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+    
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 25px; }
     .card { background: #ffffff; padding: 18px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #0077b6; }
     .card.in { border-left-color: #2a9d8f; }
@@ -33,30 +37,39 @@
     .card.out .nominal { color: #e76f51; }
     .card.balance .nominal { color: #0077b6; }
     .card.asset .nominal { color: #d4a373; }
+    
     .main-grid { display: grid; grid-template-columns: 340px 1fr; gap: 20px; }
     @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
+    
     .box { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
+    
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #555; }
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; }
     .btn-submit { width: 100%; padding: 12px; background: #0077b6; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
     .btn-submit:hover { background: #005f8a; }
     .btn-cancel { background: #e76f51; margin-top: 5px; display: none; }
+    
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f8f9fa; color: #0077b6; font-weight: 700; }
     .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
     .badge-in { background: #e8f5e9; color: #2a9d8f; }
     .badge-out { background: #ffebee; color: #e76f51; }
+    
     .action-btn { padding: 5px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: white; margin-right: 3px; }
     .btn-edit { background: #f39c12; }
     .btn-delete { background: #e74c3c; }
+    
     .report-table { width: 100%; margin-bottom: 15px; }
     .report-table td { padding: 8px 5px; }
     .report-table .header-row { font-weight: 700; background: #eef9ff; color: #0077b6; }
     .report-table .total-row { font-weight: 700; border-top: 2px solid #0077b6; border-bottom: 2px solid #0077b6; }
     .indent { padding-left: 20px !important; }
+    
+    .grafik-container { position: relative; height: 350px; width: 100%; }
+
     @media print {
       body { background: white; padding: 0; }
       .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout { display: none; }
@@ -85,7 +98,6 @@
 <body>
 
   <div class="container">
-    <!-- HEADER -->
     <div class="header">
       <div class="header-left">
         <img src="logo.png" alt="Logo IRMA">
@@ -101,30 +113,22 @@
     </div>
 
     <div class="cards-grid">
-      <div class="card balance">
-        <h4>Saldo Kas (Laba Bersih)</h4>
-        <p class="nominal" id="cardSaldo">Rp 0</p>
-      </div>
-      <div class="card in">
-        <h4>Total Pendapatan Dana</h4>
-        <p class="nominal" id="cardPendapatan">Rp 0</p>
-      </div>
-      <div class="card out">
-        <h4>Total Pengeluaran Beban</h4>
-        <p class="nominal" id="cardBeban">Rp 0</p>
-      </div>
-      <div class="card asset">
-        <h4>Total Aset Inventaris</h4>
-        <p class="nominal" id="cardAset">Rp 0</p>
-      </div>
+      <div class="card balance"><h4>Saldo Kas (Laba Bersih)</h4><p class="nominal" id="cardSaldo">Rp 0</p></div>
+      <div class="card in"><h4>Total Pendapatan Dana</h4><p class="nominal" id="cardPendapatan">Rp 0</p></div>
+      <div class="card out"><h4>Total Pengeluaran Beban</h4><p class="nominal" id="cardBeban">Rp 0</p></div>
+      <div class="card asset"><h4>Total Aset Inventaris</h4><p class="nominal" id="cardAset">Rp 0</p></div>
     </div>
 
     <div class="nav-tabs">
-      <button class="tab-btn active" onclick="bukaTab('tabInput')">📝 Jurnal Transaksi</button>
-      <button class="tab-btn" onclick="bukaTab('tabLabaRugi')">📊 Laporan Aktivitas (Laba/Sisa Dana)</button>
-      <button class="tab-btn" onclick="bukaTab('tabNeraca')">⚖️ Laporan Posisi Keuangan (Neraca)</button>
+      <button class="tab-btn active" onclick="bukaTab('tabInput')">📝 Jurnal</button>
+      <button class="tab-btn" onclick="bukaTab('tabLabaRugi')">📊 Laba/Rugi</button>
+      <button class="tab-btn" onclick="bukaTab('tabNeraca')">⚖️ Neraca</button>
+      <button class="tab-btn" onclick="bukaTab('tabModal')">📈 Perubahan Modal</button>
+      <button class="tab-btn" onclick="bukaTab('tabCashFlow')">💵 Arus Kas (Cash Flow)</button>
+      <button class="tab-btn" onclick="bukaTab('tabGrafik')">📉 Grafik Keuangan</button>
     </div>
 
+    <!-- TAB INPUT JURNAL -->
     <div id="tabInput" class="tab-content active">
       <div class="main-grid">
         <div class="box form-box">
@@ -138,13 +142,12 @@
                 <option value="Beban">Beban / Pengeluaran (Kas Keluar)</option>
                 <option value="Aset">Pembelian Inventaris/Aset Organisasi</option>
                 <option value="Utang">Pencatatan Utang / Kewajiban</option>
+                <option value="Modal">Setoran Modal / Dana Awal</option>
               </select>
             </div>
             <div class="form-group">
               <label>Kategori Akun (Termasuk Kode Akun)</label>
-              <select id="kategoriAkun" required>
-                <!-- Diberikan otomatis via JS -->
-              </select>
+              <select id="kategoriAkun" required></select>
             </div>
             <div class="form-group">
               <label>Nominal (Rp)</label>
@@ -162,56 +165,35 @@
         <div class="box">
           <h3>Jurnal Umum Organisasi</h3>
           <table>
-            <thead>
-              <tr>
-                <th>Tanggal</th>
-                <th>Keterangan</th>
-                <th>Akun (Kode)</th>
-                <th>Nominal</th>
-                <th>Aksi</th>
-              </tr>
-            </thead>
-            <tbody id="tabelJurnalBody">
-              <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
-            </tbody>
+            <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Akun (Kode)</th><th>Nominal</th><th>Aksi</th></tr></thead>
+            <tbody id="tabelJurnalBody"><tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr></tbody>
           </table>
         </div>
       </div>
     </div>
 
+    <!-- TAB LABA RUGI -->
     <div id="tabLabaRugi" class="tab-content">
       <div class="box">
-        <h3 style="text-align: center; margin-bottom: 5px;">IKATAN REMAJA MASJID (IRMA) MAN 3 BOGOR</h3>
-        <h4 style="text-align: center; margin-top: 0; color: #555;">LAPORAN AKTIVITAS & SISA DANA (LABA/RUGI)</h4>
-        <hr />
+        <h3 style="text-align: center;">LAPORAN AKTIVITAS & SISA DANA (LABA/RUGI)</h3>
         <table class="report-table">
           <tr class="header-row"><td colspan="2">PENDAPATAN ORGANISASI</td></tr>
           <tbody id="laporanPendapatan"></tbody>
-          <tr class="total-row">
-            <td>TOTAL PENDAPATAN DANA</td>
-            <td style="text-align: right;" id="rptTotalPendapatan">Rp 0</td>
-          </tr>
+          <tr class="total-row"><td>TOTAL PENDAPATAN DANA</td><td style="text-align: right;" id="rptTotalPendapatan">Rp 0</td></tr>
           <tr><td colspan="2">&nbsp;</td></tr>
           <tr class="header-row"><td colspan="2">BEBAN & PENGELUARAN KEGIATAN</td></tr>
           <tbody id="laporanBeban"></tbody>
-          <tr class="total-row">
-            <td>TOTAL BEBAN KEGIATAN</td>
-            <td style="text-align: right;" id="rptTotalBeban">Rp 0</td>
-          </tr>
+          <tr class="total-row"><td>TOTAL BEBAN KEGIATAN</td><td style="text-align: right;" id="rptTotalBeban">Rp 0</td></tr>
           <tr><td colspan="2">&nbsp;</td></tr>
-          <tr class="header-row" style="background:#e8f5e9; color:#2a9d8f;">
-            <td>SURPLUS / DEFISIT PERIODE INI (SISA HASIL BUKTI)</td>
-            <td style="text-align: right;" id="rptSurplusDefisit">Rp 0</td>
-          </tr>
+          <tr class="header-row" style="background:#e8f5e9; color:#2a9d8f;"><td>SURPLUS / DEFISIT PERIODE INI</td><td style="text-align: right;" id="rptSurplusDefisit">Rp 0</td></tr>
         </table>
       </div>
     </div>
 
+    <!-- TAB NERACA -->
     <div id="tabNeraca" class="tab-content">
       <div class="box">
-        <h3 style="text-align: center; margin-bottom: 5px;">IKATAN REMAJA MASJID (IRMA) MAN 3 BOGOR</h3>
-        <h4 style="text-align: center; margin-top: 0; color: #555;">LAPORAN POSISI KEUANGAN (NERACA)</h4>
-        <hr />
+        <h3 style="text-align: center;">LAPORAN POSISI KEUANGAN (NERACA)</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
           <div>
             <h4 style="color:#0077b6; border-bottom: 2px solid #0077b6; padding-bottom:5px;">ASET (AKTIVA)</h4>
@@ -239,9 +221,62 @@
       </div>
     </div>
 
+    <!-- TAB PERUBAHAN MODAL -->
+    <div id="tabModal" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center;">LAPORAN PERUBAHAN MODAL (DANA)</h3>
+        <table class="report-table">
+          <tr class="header-row"><td colspan="2">MODAL AWAL</td></tr>
+          <tr><td class="indent">Saldo Dana Awal Periode</td><td style="text-align: right;" id="mdlAwal">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="header-row"><td colspan="2">PERUBAHAN MODAL</td></tr>
+          <tr><td class="indent">(+) Surplus / Laba Bersih</td><td style="text-align: right;" id="mdlSurplus">Rp 0</td></tr>
+          <tr><td class="indent">(-) Prive / Pengambilan Pemilik</td><td style="text-align: right;">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="total-row" style="background:#e8f5e9; color:#2a9d8f;"><td>MODAL AKHIR</td><td style="text-align: right;" id="mdlAkhir">Rp 0</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB CASH FLOW -->
+    <div id="tabCashFlow" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center;">LAPORAN ARUS KAS (CASH FLOW)</h3>
+        <table class="report-table">
+          <tr class="header-row"><td colspan="2">ARUS KAS DARI AKTIVITAS OPERASI</td></tr>
+          <tr><td class="indent">(+) Penerimaan Kas dari Pendapatan</td><td style="text-align: right;" id="cfPendapatan">Rp 0</td></tr>
+          <tr><td class="indent">(-) Pengeluaran Kas untuk Beban</td><td style="text-align: right;" id="cfBeban">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Bersih dari Operasi</td><td style="text-align: right;" id="cfOperasi">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="header-row"><td colspan="2">ARUS KAS DARI AKTIVITAS INVESTASI</td></tr>
+          <tr><td class="indent">(-) Pembelian Aset / Inventaris</td><td style="text-align: right;" id="cfAset">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Bersih dari Investasi</td><td style="text-align: right;" id="cfInvestasi">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="header-row"><td colspan="2">ARUS KAS DARI AKTIVITAS PENDANAAN</td></tr>
+          <tr><td class="indent">(+) Penerimaan Utang</td><td style="text-align: right;" id="cfUtang">Rp 0</td></tr>
+          <tr><td class="indent">(+) Setoran Modal</td><td style="text-align: right;" id="cfModal">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Bersih dari Pendanaan</td><td style="text-align: right;" id="cfPendanaan">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="total-row" style="background:#eef9ff; color:#0077b6;"><td>KENAIKAN / PENURUNAN KAS BERSIH</td><td style="text-align: right;" id="cfTotal">Rp 0</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB GRAFIK -->
+    <div id="tabGrafik" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center;">GRAFIK PERKEMBANGAN KEUANGAN IRMA</h3>
+        <div class="grafik-container">
+          <canvas id="grafikKeuangan"></canvas>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <script>
+    let chartInstance = null;
+
     function logout() {
       if (confirm("Yakin ingin keluar dari Dashboard Bendahara?")) {
         localStorage.removeItem("irmaLogin");
@@ -271,6 +306,8 @@
         options = ["121 - Inventaris Sound System / Mic", "122 - Inventaris Karpet / Sajadah", "123 - Inventaris Banner / Papan Informasi", "124 - Aset Inventaris Lainnya"];
       } else if (jenis === "Utang") {
         options = ["211 - Utang Cetak Spanduk", "212 - Utang Perlengkapan Acara", "213 - Kewajiban Lainnya"];
+      } else if (jenis === "Modal") {
+        options = ["311 - Modal Awal Organisasi", "312 - Setoran Dana Khusus"];
       }
 
       options.forEach(opt => {
@@ -356,12 +393,13 @@
         if (window.db && window.fbTools) {
           clearInterval(checkReady);
           const { collection, onSnapshot, query, orderBy } = window.fbTools;
-          const q = query(collection(window.db, "jurnal_irma"), orderBy("waktu", "desc"));
+          const q = query(collection(window.db, "jurnal_irma"), orderBy("waktu", "asc")); // Ascending untuk grafik
 
           onSnapshot(q, (snapshot) => {
-            let totalPendapatan = 0, totalBeban = 0, totalAset = 0, totalUtang = 0;
+            let totalPendapatan = 0, totalBeban = 0, totalAset = 0, totalUtang = 0, totalModal = 0;
             let recapPendapatan = {}, recapBeban = {}, recapAset = {}, recapUtang = {};
             let htmlJurnal = "";
+            let dataGrafik = { labels: [], pemasukan: [], pengeluaran: [] };
 
             if (snapshot.empty) {
               htmlJurnal = `<tr><td colspan="5" style="text-align:center;">Belum ada catatan jurnal transaksi.</td></tr>`;
@@ -372,15 +410,28 @@
                 const post = data.jenisPost;
                 const kat = data.kategoriAkun;
 
+                // Hitung untuk grafik
+                if (post === "Pendapatan" || post === "Modal") {
+                   dataGrafik.pemasukan.push(nom);
+                   dataGrafik.pengeluaran.push(0);
+                } else {
+                   dataGrafik.pemasukan.push(0);
+                   dataGrafik.pengeluaran.push(nom);
+                }
+                dataGrafik.labels.push(data.tanggal || '-');
+
+                // Hitung Total
                 if (post === "Pendapatan") { totalPendapatan += nom; recapPendapatan[kat] = (recapPendapatan[kat] || 0) + nom; }
                 else if (post === "Beban") { totalBeban += nom; recapBeban[kat] = (recapBeban[kat] || 0) + nom; }
                 else if (post === "Aset") { totalAset += nom; recapAset[kat] = (recapAset[kat] || 0) + nom; }
                 else if (post === "Utang") { totalUtang += nom; recapUtang[kat] = (recapUtang[kat] || 0) + nom; }
+                else if (post === "Modal") { totalModal += nom; }
 
-                const isPlus = (post === "Pendapatan" || post === "Utang");
+                const isPlus = (post === "Pendapatan" || post === "Utang" || post === "Modal");
                 const color = isPlus ? "#2a9d8f" : "#e76f51";
 
-                htmlJurnal += `
+                // Render Tabel Jurnal (terbalik, terbaru di atas)
+                htmlJurnal = `
                   <tr>
                     <td>${data.tanggal || '-'}</td>
                     <td>${data.keterangan || '-'}</td>
@@ -391,21 +442,25 @@
                       <button class="action-btn btn-delete" onclick="hapusData('${doc.id}')">Hapus</button>
                     </td>
                   </tr>
-                `;
+                ` + htmlJurnal;
               });
             }
 
-            const kasBersih = totalPendapatan - totalBeban - totalAset + totalUtang;
+            // Perhitungan Utama
+            const kasBersih = totalPendapatan + totalModal - totalBeban - totalAset + totalUtang;
             const surplusDefisit = totalPendapatan - totalBeban;
             const totalAktiva = kasBersih + totalAset;
-            const totalPasiva = totalUtang + surplusDefisit;
+            const totalPasiva = totalUtang + totalModal + surplusDefisit;
+            const modalAkhir = totalModal + surplusDefisit; // Modal + Laba
 
+            // Update Cards
             document.getElementById("cardSaldo").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
             document.getElementById("cardPendapatan").innerText = "Rp " + totalPendapatan.toLocaleString("id-ID");
             document.getElementById("cardBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
             document.getElementById("cardAset").innerText = "Rp " + totalAset.toLocaleString("id-ID");
             document.getElementById("tabelJurnalBody").innerHTML = htmlJurnal;
 
+            // Update Laba Rugi
             let rptPendapatanHTML = "";
             for (let k in recapPendapatan) { rptPendapatanHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapPendapatan[k].toLocaleString("id-ID")}</td></tr>`; }
             document.getElementById("laporanPendapatan").innerHTML = rptPendapatanHTML || `<tr><td colspan="2" class="indent">-</td></tr>`;
@@ -417,6 +472,7 @@
             document.getElementById("rptTotalBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
             document.getElementById("rptSurplusDefisit").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
 
+            // Update Neraca
             document.getElementById("nrcKas").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
 
             let nrcAsetHTML = "";
@@ -430,9 +486,71 @@
             document.getElementById("nrcTotalUtang").innerText = "Rp " + totalUtang.toLocaleString("id-ID");
             document.getElementById("nrcSaldoDana").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
             document.getElementById("nrcTotalPasiva").innerText = "Rp " + totalPasiva.toLocaleString("id-ID");
+
+            // Update Modal
+            document.getElementById("mdlAwal").innerText = "Rp " + totalModal.toLocaleString("id-ID");
+            document.getElementById("mdlSurplus").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+            document.getElementById("mdlAkhir").innerText = "Rp " + modalAkhir.toLocaleString("id-ID");
+
+            // Update Cash Flow
+            document.getElementById("cfPendapatan").innerText = "Rp " + totalPendapatan.toLocaleString("id-ID");
+            document.getElementById("cfBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+            const arusOperasi = totalPendapatan - totalBeban;
+            document.getElementById("cfOperasi").innerText = "Rp " + arusOperasi.toLocaleString("id-ID");
+
+            document.getElementById("cfAset").innerText = "Rp " + totalAset.toLocaleString("id-ID");
+            document.getElementById("cfInvestasi").innerText = "Rp -" + totalAset.toLocaleString("id-ID");
+
+            document.getElementById("cfUtang").innerText = "Rp " + totalUtang.toLocaleString("id-ID");
+            document.getElementById("cfModal").innerText = "Rp " + totalModal.toLocaleString("id-ID");
+            const arusPendanaan = totalUtang + totalModal;
+            document.getElementById("cfPendanaan").innerText = "Rp " + arusPendanaan.toLocaleString("id-ID");
+
+            const totalArusKas = arusOperasi - totalAset + arusPendanaan;
+            document.getElementById("cfTotal").innerText = "Rp " + totalArusKas.toLocaleString("id-ID");
+
+            // GAMBAR GRAFIK
+            gambarGrafik(dataGrafik.labels, dataGrafik.pemasukan, dataGrafik.pengeluaran);
           });
         }
       }, 200);
+    }
+
+    function gambarGrafik(labels, pemasukan, pengeluaran) {
+      const ctx = document.getElementById('grafikKeuangan').getContext('2d');
+      if (chartInstance) { chartInstance.destroy(); }
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Pemasukan (Rp)',
+              data: pemasukan,
+              borderColor: '#2a9d8f',
+              backgroundColor: 'rgba(42, 157, 143, 0.1)',
+              tension: 0.3,
+              fill: true
+            },
+            {
+              label: 'Pengeluaran (Rp)',
+              data: pengeluaran,
+              borderColor: '#e76f51',
+              backgroundColor: 'rgba(231, 111, 81, 0.1)',
+              tension: 0.3,
+              fill: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, title: { display: true, text: 'Nominal (Rp)' } }
+          }
+        }
+      });
     }
   </script>
 </body>
