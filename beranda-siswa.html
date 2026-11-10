@@ -81,6 +81,11 @@
       <li class="menu-item active" onclick="bukaMenu('home', this)"><i>🏠</i> Home</li>
       <li class="menu-item" onclick="bukaMenu('profil-irma', this)"><i>📖</i> Visi Misi IRMA</li>
       <li class="menu-item" onclick="bukaMenu('entri-biodata', this)"><i>📝</i> Entri Biodata</li>
+      
+      <!-- MENU KARTU ANGGOTA DITAMBAHKAN DI SINI -->
+      <li class="menu-item" onclick="bukaMenu('kartu-anggota', this)"><i>🪪</i> Kartu Anggota</li>
+      <!-- -------------------------------------- -->
+
       <li class="menu-item" onclick="bukaMenu('ubah-password', this)"><i>🔒</i> Ubah Password</li>
       <li class="menu-item" onclick="bukaMenu('program-kerja', this)"><i>📝</i> Program Kerja</li>
       <li class="menu-item" onclick="bukaMenu('informasi', this)"><i>📢</i> Informasi</li>
@@ -112,12 +117,12 @@
           <div class="info-card">
             <h4>📢 Informasi Terbaru</h4>
             <p>Belum ada pengumuman baru untuk saat ini. Cek terus halaman ini untuk update terbaru dari pengurus.</p>
-            <a href="javascript:void(0)" onclick="bukaMenu('informasi', document.querySelectorAll('.menu-item')[5])" class="btn-link">Lihat Semua Informasi →</a>
+            <a href="javascript:void(0)" onclick="bukaMenu('informasi', document.querySelectorAll('.menu-item')[6])" class="btn-link">Lihat Semua Informasi →</a>
           </div>
           <div class="info-card">
             <h4>📅 Kegiatan Mendatang</h4>
             <p>Belum ada jadwal kegiatan yang terdaftar. Pantau terus agenda IRMA di halaman kegiatan.</p>
-            <a href="javascript:void(0)" onclick="bukaMenu('kegiatan', document.querySelectorAll('.menu-item')[7])" class="btn-link">Lihat Kegiatan →</a>
+            <a href="javascript:void(0)" onclick="bukaMenu('kegiatan', document.querySelectorAll('.menu-item')[8])" class="btn-link">Lihat Kegiatan →</a>
           </div>
         </div>
       </div>
@@ -147,7 +152,7 @@
     // CEK LOGIN & SIMPAN ID USER
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Simpan UID ke localStorage agar bisa diakses halaman lain (Entri Biodata)
+        // Simpan UID ke localStorage agar bisa diakses halaman lain
         localStorage.setItem("irmaUserId", user.uid); 
       } else {
         if (localStorage.getItem("irmaLogin") !== "true") {
