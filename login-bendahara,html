@@ -136,7 +136,7 @@
       const user = document.getElementById("username").value.trim();
       const pass = document.getElementById("password").value.trim();
 
-      // (Opsional) Login darurat khusus pengurus jika belum diatur di database
+      // Login default/darurat pengurus
       if (user === "bendahara" && pass === "irma2026") {
         localStorage.setItem("bendaharaLogin", JSON.stringify({ nama: "Bendahara Utama", role: "bendahara" }));
         alert("Login berhasil!");
@@ -146,7 +146,6 @@
 
       try {
         const { collection, query, where, getDocs } = window.fbAuthTools;
-        // Pengecekan ke database Firestore (misal mencocokkan ID dan memastikan jabatannya adalah Bendahara)
         const q = query(
           collection(window.db, "AnggotaIRMA"), 
           where("noId", "==", user)
@@ -160,7 +159,6 @@
 
           querySnapshot.forEach((doc) => {
             const data = doc.data();
-            // Validasi apakah jabatan mengandung kata 'bendahara' atau password sesuai
             if (data.jabatan && data.jabatan.toLowerCase().includes("bendahara")) {
               isValid = true;
               dataBendahara = data;
