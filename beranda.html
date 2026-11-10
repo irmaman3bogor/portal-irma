@@ -3,131 +3,118 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Dashboard - Portal IRMA</title>
-  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <title>Beranda - Portal IRMA MAN 3 Bogor</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { font-family: 'Poppins', sans-serif; background: #f4f7f6; display: flex; height: 100vh; overflow: hidden; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
     
-    /* SIDEBAR KIRI */
-    .sidebar { width: 260px; background: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; }
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f6f9; display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR --- */
+    .sidebar { width: 260px; background-color: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
     .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-header h2 { font-size: 20px; color: #d4af37; margin-bottom: 5px; }
-    .sidebar-header p { font-size: 12px; color: #ccc; }
+    .sidebar-header img { width: 60px; margin-bottom: 10px; }
+    .sidebar-header h2 { color: #d4af37; font-size: 18px; margin-bottom: 5px; }
+    .sidebar-header p { font-size: 11px; color: #ccc; }
     
-    .menu-list { list-style: none; flex: 1; overflow-y: auto; padding: 10px 0; }
-    .menu-item { display: flex; align-items: center; gap: 15px; padding: 15px 20px; color: #ccc; text-decoration: none; cursor: pointer; transition: 0.2s; font-size: 14px; border-left: 4px solid transparent; }
-    .menu-item:hover, .menu-item.active { background: rgba(255,255,255,0.1); color: #d4af37; border-left-color: #d4af37; }
-    .menu-item i { font-size: 18px; width: 20px; text-align: center; }
+    .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
+    .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; border-left: 4px solid transparent; }
+    .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255,255,255,0.05); border-left-color: #d4af37; color: #d4af37; }
+    .sidebar-menu a span { margin-right: 15px; font-size: 16px; }
 
-    /* KONTEN KANAN */
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-    .topbar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); z-index: 10; }
-    .topbar h3 { color: #0a3622; font-size: 18px; }
-    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    /* --- MAIN CONTENT --- */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+    
+    /* Header Atas */
+    .top-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+    .top-header h1 { font-size: 20px; color: #0a3622; }
+    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
     .btn-logout:hover { background: #c0392b; }
+    
+    /* Menu Toggle HP */
+    .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
 
-    .content-area { padding: 30px; overflow-y: auto; flex: 1; }
-    .welcome-box { background: linear-gradient(135deg, #0a3622, #1a5c3a); color: white; padding: 30px; border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(10,54,34,0.3); }
-    .welcome-box h2 { margin-bottom: 10px; font-size: 24px; }
-    .welcome-box p { font-size: 14px; opacity: 0.9; }
+    /* Konten Body */
+    .content-body { padding: 30px; flex: 1; }
+    .welcome-box { background: linear-gradient(135deg, #0a3622, #1a5c3a); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .welcome-box h2 { color: #d4af37; margin-bottom: 10px; }
+    .welcome-box p { font-size: 14px; line-height: 1.6; opacity: 0.9; }
 
-    /* IFRAME UNTUK KONTEN */
-    #contentFrame { width: 100%; height: 100%; border: none; display: none; background: transparent; }
-
-    /* RESPONSIF */
+    /* --- RESPONSIF HP --- */
     @media (max-width: 768px) {
-      .sidebar { width: 0; position: absolute; height: 100%; z-index: 100; }
-      .sidebar.show { width: 260px; }
-      .content-area { padding: 15px; }
+      .sidebar { position: fixed; left: -260px; height: 100vh; }
+      .sidebar.open { left: 0; }
+      .menu-toggle { display: block; }
+      .top-header { padding: 15px 20px; }
+      .top-header h1 { font-size: 16px; }
+      .content-body { padding: 20px; }
+      .welcome-box { padding: 20px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- SIDEBAR KIRI -->
+  <!-- SIDEBAR -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
-      <img src="logo.png" alt="Logo IRMA" style="width: 60px; height: auto; margin-bottom: 5px; border-radius: 8px;">
+      <img src="logo.png" alt="Logo IRMA">
       <h2>PORTAL IRMA</h2>
       <p>MAN 3 BOGOR</p>
     </div>
-    <ul class="menu-list">
-      <li class="menu-item active" onclick="bukaMenu('home', this)"><i>🏠</i> Home</li>
-      <li class="menu-item" onclick="bukaMenu('profil-irma', this)"><i>📖</i> Profil IRMA</li>
-      <li class="menu-item" onclick="bukaMenu('informasi', this)"><i>📢</i> Informasi</li>
-      <li class="menu-item" onclick="bukaMenu('keuangan', this)"><i>💰</i> Keuangan</li>
-      <li class="menu-item" onclick="bukaMenu('kehadiran', this)"><i>📋</i> Kehadiran</li>
-      <li class="menu-item" onclick="bukaMenu('data-anggota', this)"><i>👥</i> Data Anggota</li>
-      <li class="menu-item" onclick="bukaMenu('kegiatan', this)"><i>📅</i> Kegiatan</li>
-      <!-- MENU PROGRAM KERJA DITAMBAHKAN DI SINI -->
-      <li class="menu-item" onclick="bukaMenu('program-kerja', this)"><i>📝</i> Program Kerja</li>
-      <li class="menu-item" onclick="bukaMenu('bendahara', this)"><i>📊</i> Sistem Akuntansi IRMA</li>
-      <li class="menu-item" onclick="bukaMenu('daftar-anggota-irma', this)"><i>📋</i> Daftar Anggota IRMA</li>
-      <!-- ------------------------- -->
-    </ul>
+    <div class="sidebar-menu">
+      <a href="beranda.html" class="active"><span>🏠</span> Home</a>
+      <a href="profil.html"><span>📖</span> Profil IRMA</a>
+      <a href="informasi.html"><span>📢</span> Informasi</a>
+      <a href="keuangan.html"><span>💰</span> Keuangan</a>
+      <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
+      <a href="data-anggota.html"><span>👥</span> Data Anggota</a>
+      <a href="kegiatan.html"><span>📅</span> Kegiatan</a>
+      <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
+      <a href="akuntansi.html"><span>📊</span> Sistem Akuntansi IRMA</a>
+    </div>
   </div>
 
-  <!-- KONTEN KANAN -->
+  <!-- MAIN CONTENT -->
   <div class="main-content">
-    <div class="topbar">
-      <h3 id="pageTitle">Home</h3>
-      <button class="btn-logout" onclick="logout()">Keluar</button>
+    
+    <!-- HEADER -->
+    <div class="top-header">
+      <div style="display: flex; align-items: center;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1>Daftar Anggota IRMA</h1>
+      </div>
+      <button onclick="logout()" class="btn-logout">Keluar</button>
     </div>
 
-    <div class="content-area" id="contentArea">
-      <!-- TAMPILAN AWAL (HOME) -->
-      <div class="welcome-box" id="welcomeBox">
+    <!-- KONTEN BERANDA -->
+    <div class="content-body">
+      <div class="welcome-box">
         <h2>Selamat Datang di Portal IRMA!</h2>
-        <p>Silakan pilih menu di sebelah kiri untuk mulai mengelola data organisasi.</p>
+        <p>Sistem Informasi Organisasi Rohis MAN 3 Bogor. Silakan pilih menu di sebelah kiri untuk mulai mengelola data organisasi, keuangan, kehadiran, dan program kerja.</p>
       </div>
-      
-      <!-- IFRAME UNTUK MEMUAT HALAMAN LAIN -->
-      <iframe id="contentFrame" src=""></iframe>
     </div>
+
   </div>
 
+  <!-- SCRIPT PROTEKSI & LOGOUT -->
   <script>
-    // CEK LOGIN
+    // 1. Proteksi Halaman (Cek Login)
     if (localStorage.getItem("irmaLogin") !== "true") {
-      window.location.href = "index.html";
+      window.location.href = "index.html"; // Lempar ke login jika belum masuk
     }
 
-    function bukaMenu(menu, element) {
-      // Ganti status aktif menu
-      document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
-      element.classList.add('active');
-
-      // Ganti judul di topbar
-      const judul = element.innerText.replace(/[^\w\s]/g, '').trim();
-      document.getElementById('pageTitle').innerText = judul;
-
-      // Sembunyikan welcome box, tampilkan iframe
-      document.getElementById('welcomeBox').style.display = 'none';
-      const iframe = document.getElementById('contentFrame');
-      iframe.style.display = 'block';
-
-      // Arahkan iframe ke halaman yang sesuai
-      if (menu === 'home') {
-        // Jika home, tampilkan welcome box lagi
-        document.getElementById('welcomeBox').style.display = 'block';
-        iframe.style.display = 'none';
-        iframe.src = "";
-      } else {
-        iframe.src = menu + ".html"; // Memanggil file seperti program-kerja.html
-      }
-
-      // Tutup sidebar di HP
-      if (window.innerWidth <= 768) {
-        document.getElementById('sidebar').classList.remove('show');
-      }
-    }
-
+    // 2. Fungsi Logout
     function logout() {
-      if (confirm("Yakin ingin keluar dari portal?")) {
+      if (confirm("Yakin ingin keluar dari Portal IRMA?")) {
         localStorage.removeItem("irmaLogin");
+        localStorage.removeItem("userLoginData");
         window.location.href = "index.html";
       }
+    }
+
+    // 3. Fungsi Buka/Tutup Sidebar di HP
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
     }
   </script>
 </body>
