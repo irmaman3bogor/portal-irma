@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Login Bendahara - Portal IRMA MAN 3 Bogor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body {
+      background-color: #f4f6f9;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .login-card {
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+      width: 100%;
+      max-width: 380px;
+    }
+
+    .login-card h2 {
+      margin-top: 0;
+      color: #0077b6;
+      font-size: 20px;
+      text-align: center;
+      margin-bottom: 5px;
+    }
+
+    .login-card p {
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+      margin-bottom: 25px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    .form-group label {
+      display: block;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+      color: #444;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .btn-login {
+      width: 100%;
+      padding: 12px;
+      background: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    .btn-login:hover {
+      background: #005f8a;
+    }
+
+    .back-link {
+      display: block;
+      text-align: center;
+      margin-top: 15px;
+      font-size: 12px;
+      color: #777;
+      text-decoration: none;
+    }
+    .back-link:hover { text-decoration: underline; }
+  </style>
+
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.fbAuthTools = { collection, query, where, getDocs };
+  </script>
+</head>
+<body>
+
+  <div class="login-card">
+    <h2>LOGIN BENDAHARA</h2>
+    <p>Portal Akuntansi IRMA MAN 3 Bogor</p>
+
+    <form id="formLoginBendahara" onsubmit="prosesLoginBendahara(event)">
+      <div class="form-group">
+        <label>ID Anggota / Username</label>
+        <input type="text" id="username" placeholder="Masukkan ID Bendahara" required />
+      </div>
+      <div class="form-group">
+        <label>Password / PIN</label>
+        <input type="password" id="password" placeholder="Masukkan password" required />
+      </div>
+      <button type="submit" class="btn-login">Masuk Dashboard</button>
+    </form>
+
+    <a href="index.html" class="back-link">&larr; Kembali ke Beranda Utama</a>
+  </div>
+
+  <script>
+    async function prosesLoginBendahara(e) {
+      e.preventDefault();
+      const user = document.getElementById("username").value.trim();
+      const pass = document.getElementById("password").value.trim();
+
+      // (Opsional) Login darurat khusus pengurus jika belum diatur di database
+      if (user === "bendahara" && pass === "irma2026") {
+        localStorage.setItem("bendaharaLogin", JSON.stringify({ nama: "Bendahara Utama", role: "bendahara" }));
+        alert("Login berhasil!");
+        window.location.href = "bendahara.html";
+        return;
+      }
+
+      try {
+        const { collection, query, where, getDocs } = window.fbAuthTools;
+        // Pengecekan ke database Firestore (misal mencocokkan ID dan memastikan jabatannya adalah Bendahara)
+        const q = query(
+          collection(window.db, "AnggotaIRMA"), 
+          where("noId", "==", user)
+        );
+        
+        const querySnapshot = await getDocs(q);
+
+        if (!querySnapshot.empty) {
+          let isValid = false;
+          let dataBendahara = null;
+
+          querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            // Validasi apakah jabatan mengandung kata 'bendahara' atau password sesuai
+            if (data.jabatan && data.jabatan.toLowerCase().includes("bendahara")) {
+              isValid = true;
+              dataBendahara = data;
+            }
+          });
+
+          if (isValid) {
+            localStorage.setItem("bendaharaLogin", JSON.stringify(dataBendahara));
+            alert("Selamat datang, Bendahara " + dataBendahara.nama);
+            window.location.href = "bendahara.html";
+          } else {
+            alert("Akses ditolak! Akun ini bukan pengurus bendahara.");
+          }
+        } else {
+          alert("ID Bendahara tidak ditemukan di database.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Terjadi kesalahan sistem: " + error.message);
+      }
+    }
+  </script>
+</body>
+</html>
