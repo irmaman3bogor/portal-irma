@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kartu Anggota IRMA - Portal IRMA</title>
+  <!-- Library untuk Barcode -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    body { 
+      font-family: 'Poppins', sans-serif; 
+      background: #f4f7f6; 
+      margin: 0; 
+      padding: 40px 20px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    /* DESAIN KARTU */
+    .kartu { 
+      width: 100%; 
+      max-width: 450px; 
+      background: linear-gradient(135deg, #0d9488 0%, #0f766e 50%, #0a3622 100%);
+      border-radius: 20px; 
+      padding: 20px; 
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3); 
+      position: relative;
+      overflow: hidden;
+      color: white;
+      border: 3px solid #d4af37;
+    }
+
+    /* MOTIF BATIK / GEOMETRIS */
+    .kartu::before {
+      content: '';
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(212,175,55,0.2) 10%, transparent 10%);
+      background-size: 20px 20px;
+      border-radius: 50%;
+      z-index: 0;
+    }
+    .kartu::after {
+      content: '';
+      position: absolute;
+      bottom: -50px; left: -50px;
+      width: 200px; height: 200px;
+      background: radial-gradient(circle, rgba(255,255,255,0.1) 10%, transparent 10%);
+      background-size: 15px 15px;
+      border-radius: 50%;
+      z-index: 0;
+    }
+
+    .kartu-header { display: flex; align-items: center; gap: 15px; border-bottom: 2px solid rgba(212,175,55,0.5); padding-bottom: 10px; margin-bottom: 15px; position: relative; z-index: 1; }
+    .kartu-header img { width: 50px; height: 50px; background: white; border-radius: 50%; padding: 5px; }
+    .kartu-header div h2 { margin: 0; font-size: 18px; color: #d4af37; text-shadow: 1px 1px 2px rgba(0,0,0,0.5); }
+    .kartu-header div p { margin: 0; font-size: 11px; color: #eee; }
+
+    .kartu-body { display: flex; gap: 15px; position: relative; z-index: 1; }
+    .foto-profil { width: 100px; height: 130px; object-fit: cover; border-radius: 10px; border: 3px solid #d4af37; background: #eee; }
+    
+    .data-anggota { flex: 1; }
+    .data-anggota table { width: 100%; border-collapse: collapse; font-size: 12px; color: #fff; }
+    .data-anggota td { padding: 3px 0; vertical-align: top; }
+    .data-anggota td:first-child { font-weight: 600; color: #d4af37; width: 70px; }
+
+    .kartu-footer { margin-top: 15px; text-align: center; position: relative; z-index: 1; border-top: 1px solid rgba(255,255,255,0.2); padding-top: 10px; }
+    .kartu-footer p { margin: 0; font-size: 10px; color: #ddd; }
+    #barcode { width: 100%; height: 40px; margin-top: 5px; }
+    
+    /* TOMBOL PRINT */
+    .btn-print { 
+      display: block; 
+      width: 100%; 
+      max-width: 450px; 
+      margin: 20px auto 0; 
+      padding: 12px; 
+      background: #0a3622; 
+      color: white; 
+      text-align: center; 
+      border: none; 
+      border-radius: 8px; 
+      font-weight: bold; 
+      cursor: pointer; 
+      font-size: 16px;
+    }
+    .btn-print:hover { background: #1a5c3a; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .btn-print { display: none; }
+      .kartu { box-shadow: none; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    }
+  </style>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.fb = { doc, getDoc };
+  </script>
+</head>
+<body>
+
+  <div style="width: 100%;">
+    <!-- KARTU ANGGOTA -->
+    <div class="kartu" id="kartuAnggota">
+      <div class="kartu-header">
+        <img src="logo.png" alt="Logo IRMA">
+        <div>
+          <h2>KARTU ANGGOTA IRMA</h2>
+          <p>MAN 3 BOGOR</p>
+        </div>
+      </div>
+
+      <div class="kartu-body">
+        <img id="fotoProfil" src="https://ui-avatars.com/api/?name=Siswa&background=0a3622&color=fff" class="foto-profil" alt="Foto">
+        <div class="data-anggota">
+          <table>
+            <tr><td>Nama</td><td>: <span id="txtNama">Memuat...</span></td></tr>
+            <tr><td>NIS</td><td>: <span id="txtNis">-</span></td></tr>
+            <tr><td>No. ID</td><td>: <span id="txtNoId">-</span></td></tr>
+            <tr><td>Jabatan</td><td>: <span id="txtJabatan">-</span></td></tr>
+            <tr><td>Kelas</td><td>: <span id="txtKelas">-</span></td></tr>
+          </table>
+        </div>
+      </div>
+
+      <div class="kartu-footer">
+        <p>Kartu ini merupakan identitas resmi anggota Ekskul IRMA MAN 3 Bogor.</p>
+        <svg id="barcode"></svg>
+      </div>
+    </div>
+
+    <!-- TOMBOL CETAK -->
+    <button class="btn-print" onclick="window.print()">🖨️ CETAK KARTU</button>
+  </div>
+
+  <script>
+    // Ambil UID dari URL (jika dibuka via iframe) atau dari localStorage
+    const urlParams = new URLSearchParams(window.location.search);
+    let uid = urlParams.get('uid');
+    if (!uid) {
+      const userLogin = JSON.parse(localStorage.getItem("userLoginData"));
+      if (userLogin && userLogin.uid) uid = userLogin.uid;
+    }
+
+    if (!uid) {
+      alert("Sesi login tidak ditemukan. Silakan login ulang.");
+      // window.location.href = "index.html"; // Buka komentar ini jika ingin redirect
+    } else {
+      muatDataKartu(uid);
+    }
+
+    async function muatDataKartu(uid) {
+      try {
+        const { doc, getDoc } = window.fb;
+        const docRef = doc(window.db, "AnggotaIRMA", uid);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          
+          // Isi data ke kartu
+          document.getElementById("txtNama").innerText = data.nama || "-";
+          document.getElementById("txtNis").innerText = data.nis || "-";
+          document.getElementById("txtNoId").innerText = data.noId || "-";
+          document.getElementById("txtJabatan").innerText = data.jabatan || "-";
+          document.getElementById("txtKelas").innerText = (data.kelas || "-") + " " + (data.jurusan || "");
+
+          // Isi foto
+          if (data.fotoUrl) {
+            document.getElementById("fotoProfil").src = data.fotoUrl;
+          } else {
+            const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.nama || 'Siswa')}&background=0a3622&color=fff&size=150`;
+            document.getElementById("fotoProfil").src = avatarUrl;
+          }
+
+          // Generate Barcode (menggunakan NIS atau No ID)
+          const barcodeData = data.nis || data.noId || "000000";
+          JsBarcode("#barcode", barcodeData, {
+            format: "CODE128",
+            lineColor: "#fff", // Warna barcode putih agar kontras dengan background gelap
+            width: 2,
+            height: 40,
+            displayValue: true,
+            fontSize: 12,
+            fontColor: "#fff",
+            background: "transparent"
+          });
+
+        } else {
+          alert("Data anggota belum diisi. Silakan isi Entri Biodata terlebih dahulu.");
+        }
+      } catch (error) {
+        console.error(error);
+        alert("Gagal memuat data kartu.");
+      }
+    }
+  </script>
+</body>
+</html>
