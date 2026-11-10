@@ -280,6 +280,8 @@
 
     async function muatDataKartu(uid) {
       try {
+        const { doc, getDoc } = window.fb;
+
         // 1. Coba ambil dari AnggotaIRMA
         const docRef = doc(window.db, "AnggotaIRMA", uid);
         const docSnap = await getDoc(docRef);
@@ -303,6 +305,7 @@
 
         } else {
           // 2. Fallback ke biodata_siswa (jika data di AnggotaIRMA belum ada)
+          const { doc, getDoc } = window.fb;
           const docRefLama = doc(window.db, "biodata_siswa", uid);
           const docSnapLama = await getDoc(docRefLama);
           
