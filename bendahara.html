@@ -10,8 +10,13 @@
     body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
     .container { max-width: 1100px; margin: 0 auto; }
     .header { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .header-left { display: flex; align-items: center; gap: 15px; }
+    .header-left img { width: 50px; height: 50px; object-fit: contain; }
     .header h2 { margin: 0; color: #0077b6; font-size: 20px; }
     .header p { margin: 3px 0 0; color: #777; font-size: 12px; }
+    .header-right { display: flex; gap: 10px; }
+    .btn-logout { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
+    .btn-logout:hover { background: #c0392b; }
     .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
     .tab-btn { padding: 10px 20px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; font-size: 13px; cursor: pointer; color: #555; }
     .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
@@ -37,12 +42,16 @@
     .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 9px; border: 1px solid #ccc; border-radius: 8px; font-size: 13px; }
     .btn-submit { width: 100%; padding: 12px; background: #0077b6; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
     .btn-submit:hover { background: #005f8a; }
+    .btn-cancel { background: #e76f51; margin-top: 5px; display: none; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f8f9fa; color: #0077b6; font-weight: 700; }
     .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 700; display: inline-block; }
     .badge-in { background: #e8f5e9; color: #2a9d8f; }
     .badge-out { background: #ffebee; color: #e76f51; }
+    .action-btn { padding: 5px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: white; margin-right: 3px; }
+    .btn-edit { background: #f39c12; }
+    .btn-delete { background: #e74c3c; }
     .report-table { width: 100%; margin-bottom: 15px; }
     .report-table td { padding: 8px 5px; }
     .report-table .header-row { font-weight: 700; background: #eef9ff; color: #0077b6; }
@@ -50,7 +59,7 @@
     .indent { padding-left: 20px !important; }
     @media print {
       body { background: white; padding: 0; }
-      .nav-tabs, .form-box, .btn-submit, .header p { display: none; }
+      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout { display: none; }
       .container { max-width: 100%; }
       .tab-content { display: block !important; }
       .box { box-shadow: none; border: 1px solid #ccc; }
@@ -58,7 +67,7 @@
   </style>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
       authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
@@ -69,20 +78,25 @@
     };
     const app = initializeApp(firebaseConfig);
     window.db = getFirestore(app);
-    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp };
+    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc };
     muatDataKas();
   </script>
 </head>
 <body>
 
   <div class="container">
+    <!-- HEADER -->
     <div class="header">
-      <div>
-        <h2>SISTEM AKUNTANSI & LAPORAN IRMA</h2>
-        <p>MAN 3 BOGOR</p>
+      <div class="header-left">
+        <img src="logo.png" alt="Logo IRMA">
+        <div>
+          <h2>SISTEM AKUNTANSI & LAPORAN IRMA</h2>
+          <p>MAN 3 BOGOR</p>
+        </div>
       </div>
-      <div>
+      <div class="header-right">
         <button onclick="window.print()" class="tab-btn" style="background:#2a9d8f; color:white; border:none;">🖨️ Cetak LPJ</button>
+        <button onclick="logout()" class="btn-logout">🚪 Keluar</button>
       </div>
     </div>
 
@@ -116,6 +130,7 @@
         <div class="box form-box">
           <h3>+ Input Transaksi Jurnal</h3>
           <form id="formAkuntansi" onsubmit="simpanJurnal(event)">
+            <input type="hidden" id="editId" value="">
             <div class="form-group">
               <label>Jenis Post Akuntansi</label>
               <select id="jenisPost" required onchange="updateKategoriOptions()">
@@ -139,7 +154,8 @@
               <label>Keterangan / Uraian</label>
               <textarea id="keterangan" rows="3" placeholder="Contoh: Kas mingguan anggota Divisi Syiar" required></textarea>
             </div>
-            <button type="submit" class="btn-submit">Simpan ke Jurnal</button>
+            <button type="submit" class="btn-submit" id="btnSimpan">Simpan ke Jurnal</button>
+            <button type="button" class="btn-submit btn-cancel" id="btnBatal" onclick="batalEdit()">Batal Edit</button>
           </form>
         </div>
 
@@ -152,10 +168,11 @@
                 <th>Keterangan</th>
                 <th>Akun (Kode)</th>
                 <th>Nominal</th>
+                <th>Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelJurnalBody">
-              <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+              <tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr>
             </tbody>
           </table>
         </div>
@@ -225,6 +242,14 @@
   </div>
 
   <script>
+    function logout() {
+      if (confirm("Yakin ingin keluar dari Dashboard Bendahara?")) {
+        localStorage.removeItem("irmaLogin");
+        localStorage.removeItem("userLoginData");
+        window.location.href = "index.html";
+      }
+    }
+
     function bukaTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
@@ -232,41 +257,20 @@
       event.currentTarget.classList.add('active');
     }
 
-    // UPDATE PILIHAN KATEGORI DENGAN KODE AKUN
     function updateKategoriOptions() {
       const jenis = document.getElementById("jenisPost").value;
       const selectKategori = document.getElementById("kategoriAkun");
       selectKategori.innerHTML = "";
 
       let options = [];
-
       if (jenis === "Pendapatan") {
-        options = [
-          "411 - Iuran / Kas Mingguan Anggota",
-          "412 - Infaq / Donatur Hamba Allah",
-          "413 - Dana Bantuan Sekolah",
-          "414 - Hasil Bazaar / UDA (Usaha Dana)"
-        ];
+        options = ["411 - Iuran / Kas Mingguan Anggota", "412 - Infaq / Donatur Hamba Allah", "413 - Dana Bantuan Sekolah", "414 - Hasil Bazaar / UDA (Usaha Dana)"];
       } else if (jenis === "Beban") {
-        options = [
-          "511 - Beban Program Kerja Div. Syiar",
-          "512 - Beban Program Kerja Div. Humas",
-          "513 - Beban Konsumsi & Acara",
-          "514 - Beban ATK & Percetakan"
-        ];
+        options = ["511 - Beban Program Kerja Div. Syiar", "512 - Beban Program Kerja Div. Humas", "513 - Beban Konsumsi & Acara", "514 - Beban ATK & Percetakan"];
       } else if (jenis === "Aset") {
-        options = [
-          "121 - Inventaris Sound System / Mic",
-          "122 - Inventaris Karpet / Sajadah",
-          "123 - Inventaris Banner / Papan Informasi",
-          "124 - Aset Inventaris Lainnya"
-        ];
+        options = ["121 - Inventaris Sound System / Mic", "122 - Inventaris Karpet / Sajadah", "123 - Inventaris Banner / Papan Informasi", "124 - Aset Inventaris Lainnya"];
       } else if (jenis === "Utang") {
-        options = [
-          "211 - Utang Cetak Spanduk",
-          "212 - Utang Perlengkapan Acara",
-          "213 - Kewajiban Lainnya"
-        ];
+        options = ["211 - Utang Cetak Spanduk", "212 - Utang Perlengkapan Acara", "213 - Kewajiban Lainnya"];
       }
 
       options.forEach(opt => {
@@ -276,32 +280,74 @@
         selectKategori.appendChild(el);
       });
     }
-
     updateKategoriOptions();
 
     async function simpanJurnal(e) {
       e.preventDefault();
+      const editId = document.getElementById("editId").value;
       const jenisPost = document.getElementById("jenisPost").value;
       const kategoriAkun = document.getElementById("kategoriAkun").value;
       const nominal = parseFloat(document.getElementById("nominal").value);
       const keterangan = document.getElementById("keterangan").value;
 
       try {
-        const { collection, addDoc, serverTimestamp } = window.fbTools;
-        await addDoc(collection(window.db, "jurnal_irma"), {
-          jenisPost,
-          kategoriAkun,
-          nominal,
-          keterangan,
-          waktu: serverTimestamp(),
-          tanggal: new Date().toLocaleDateString("id-ID")
-        });
-        alert("Transaksi berhasil dicatat!");
+        const { collection, addDoc, doc, updateDoc, serverTimestamp } = window.fbTools;
+
+        if (editId) {
+          await updateDoc(doc(window.db, "jurnal_irma", editId), {
+            jenisPost, kategoriAkun, nominal, keterangan
+          });
+          alert("Transaksi berhasil diperbarui!");
+        } else {
+          await addDoc(collection(window.db, "jurnal_irma"), {
+            jenisPost, kategoriAkun, nominal, keterangan,
+            waktu: serverTimestamp(),
+            tanggal: new Date().toLocaleDateString("id-ID")
+          });
+          alert("Transaksi berhasil dicatat!");
+        }
+
         document.getElementById("formAkuntansi").reset();
+        document.getElementById("editId").value = "";
+        document.getElementById("btnSimpan").textContent = "Simpan ke Jurnal";
+        document.getElementById("btnBatal").style.display = "none";
         updateKategoriOptions();
       } catch (error) {
         console.error("Error menyimpan transaksi: ", error);
         alert("Gagal menyimpan transaksi: " + error.message);
+      }
+    }
+
+    window.editData = async function(id, jenisPost, kategoriAkun, nominal, keterangan) {
+      document.getElementById("editId").value = id;
+      document.getElementById("jenisPost").value = jenisPost;
+      updateKategoriOptions();
+      document.getElementById("kategoriAkun").value = kategoriAkun;
+      document.getElementById("nominal").value = nominal;
+      document.getElementById("keterangan").value = keterangan;
+
+      document.getElementById("btnSimpan").textContent = "Update Jurnal";
+      document.getElementById("btnBatal").style.display = "block";
+      window.scrollTo(0, 0);
+    }
+
+    window.batalEdit = function() {
+      document.getElementById("formAkuntansi").reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("btnSimpan").textContent = "Simpan ke Jurnal";
+      document.getElementById("btnBatal").style.display = "none";
+      updateKategoriOptions();
+    }
+
+    window.hapusData = async function(id) {
+      if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+      try {
+        const { doc, deleteDoc } = window.fbTools;
+        await deleteDoc(doc(window.db, "jurnal_irma", id));
+        alert("Transaksi berhasil dihapus!");
+      } catch (error) {
+        console.error("Error hapus: ", error);
+        alert("Gagal menghapus: " + error.message);
       }
     }
 
@@ -318,7 +364,7 @@
             let htmlJurnal = "";
 
             if (snapshot.empty) {
-              htmlJurnal = `<tr><td colspan="4" style="text-align:center;">Belum ada catatan jurnal transaksi.</td></tr>`;
+              htmlJurnal = `<tr><td colspan="5" style="text-align:center;">Belum ada catatan jurnal transaksi.</td></tr>`;
             } else {
               snapshot.forEach((doc) => {
                 const data = doc.data();
@@ -340,6 +386,10 @@
                     <td>${data.keterangan || '-'}</td>
                     <td><span class="badge ${isPlus ? 'badge-in' : 'badge-out'}">${kat}</span></td>
                     <td style="font-weight:600; color: ${color};">Rp ${nom.toLocaleString("id-ID")}</td>
+                    <td>
+                      <button class="action-btn btn-edit" onclick="editData('${doc.id}', '${post}', '${kat}', ${nom}, '${data.keterangan}')">Edit</button>
+                      <button class="action-btn btn-delete" onclick="hapusData('${doc.id}')">Hapus</button>
+                    </td>
                   </tr>
                 `;
               });
