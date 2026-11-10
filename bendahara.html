@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Akuntansi Bendahara IRMA - MAN 3 Bogor</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+
+    .container { max-width: 1100px; margin: 0 auto; }
+
+    /* HEADER */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #ffffff;
+      padding: 15px 25px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    .header h2 { margin: 0; color: #0077b6; font-size: 20px; }
+    .header p { margin: 3px 0 0; color: #777; font-size: 12px; }
+
+    /* NAVIGATION TAB */
+    .nav-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .tab-btn {
+      padding: 10px 20px;
+      background: #ffffff;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      color: #555;
+    }
+    .tab-btn.active {
+      background: #0077b6;
+      color: white;
+      border-color: #0077b6;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    /* CARDS RINGKASAN */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+    .card {
+      background: #ffffff;
+      padding: 18px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      border-left: 5px solid #0077b6;
+    }
+    .card.in { border-left-color: #2a9d8f; }
+    .card.out { border-left-color: #e76f51; }
+    .card.asset { border-left-color: #e9c46a; }
+
+    .card h4 { margin: 0 0 8px; font-size: 12px; color: #666; text-transform: uppercase; }
+    .card .nominal { font-size: 20px; font-weight: 700; margin: 0; }
+    .card.in .nominal { color: #2a9d8f; }
+    .card.out .nominal { color: #e76f51; }
+    .card.balance .nominal { color: #0077b6; }
+    .card.asset .nominal { color: #d4a373; }
+
+    /* LAYOUT FORM DAN TABEL */
+    .main-grid {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+    }
+    @media (max-width: 850px) {
+      .main-grid { grid-template-columns: 1fr; }
+    }
+
+    .box {
+      background: #ffffff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 20px;
+    }
+    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
+    
+    .form-group { margin-bottom: 12px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #555; }
+    .form-group input, .form-group select, .form-group textarea {
+      width: 100%;
+      padding: 9px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    .btn-submit {
+      width: 100%;
+      padding: 12px;
+      background: #0077b6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 700;
+      cursor: pointer;
+      font-size: 14px;
+    }
+    .btn-submit:hover { background: #005f8a; }
+
+    /* TABEL KEUMUMAN */
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+    th { background: #f8f9fa; color: #0077b6; font-weight: 700; }
+
+    .badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      display: inline-block;
+    }
+    .badge-in { background: #e8f5e9; color: #2a9d8f; }
+    .badge-out { background: #ffebee; color: #e76f51; }
+
+    /* GAYA TAMPILAN LAPORAN KEAN */
+    .report-table { width: 100%; margin-bottom: 15px; }
+    .report-table td { padding: 8px 5px; }
+    .report-table .header-row { font-weight: 700; background: #eef9ff; color: #0077b6; }
+    .report-table .total-row { font-weight: 700; border-top: 2px solid #0077b6; border-bottom: 2px solid #0077b6; }
+    .indent { padding-left: 20px !important; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .nav-tabs, .form-box, .btn-submit, .header p { display: none; }
+      .container { max-width: 100%; }
+      .tab-content { display: block !important; }
+      .box { box-shadow: none; border: 1px solid #ccc; }
+    }
+  </style>
+
+  <!-- Firebase Integration -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp };
+
+    muatDataKas();
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <!-- HEADER -->
+    <div class="header">
+      <div>
+        <h2>SISTEM AKUNTANSI & LAPORAN IRMA</h2>
+        <p>MAN 3 BOGOR</p>
+      </div>
+      <div>
+        <button onclick="window.print()" class="tab-btn" style="background:#2a9d8f; color:white; border:none;">🖨️ Cetak LPJ</button>
+      </div>
+    </div>
+
+    <!-- CARDS SUMMARY -->
+    <div class="cards-grid">
+      <div class="card balance">
+        <h4>Saldo Kas (Laba Bersih)</h4>
+        <p class="nominal" id="cardSaldo">Rp 0</p>
+      </div>
+      <div class="card in">
+        <h4>Total Pendapatan Dana</h4>
+        <p class="nominal" id="cardPendapatan">Rp 0</p>
+      </div>
+      <div class="card out">
+        <h4>Total Pengeluaran Beban</h4>
+        <p class="nominal" id="cardBeban">Rp 0</p>
+      </div>
+      <div class="card asset">
+        <h4>Total Aset Inventaris</h4>
+        <p class="nominal" id="cardAset">Rp 0</p>
+      </div>
+    </div>
+
+    <!-- TABS NAVIGATION -->
+    <div class="nav-tabs">
+      <button class="tab-btn active" onclick="bukaTab('tabInput')">📝 Jurnal Transaksi</button>
+      <button class="tab-btn" onclick="bukaTab('tabLabaRugi')">📊 Laporan Aktivitas (Laba/Sisa Dana)</button>
+
+      <button class="tab-btn" onclick="bukaTab('tabNeraca')">⚖️ Laporan Posisi Keuangan (Neraca)</button>
+    </div>
+
+    <!-- TAB 1: JURNAL TRANSAKSI -->
+    <div id="tabInput" class="tab-content active">
+      <div class="main-grid">
+        <!-- FORM INPUT -->
+        <div class="box form-box">
+          <h3>+ Input Transaksi Jurnal</h3>
+          <form id="formAkuntansi" onsubmit="simpanJurnal(event)">
+            <div class="form-group">
+              <label>Jenis Post Akuntansi</label>
+              <select id="jenisPost" required onchange="updateKategoriOptions()">
+                <option value="Pendapatan">Pendapatan (Kas Masuk)</option>
+                <option value="Beban">Beban / Pengeluaran (Kas Keluar)</option>
+                <option value="Aset">Pembelian Inventaris/Aset Organisasi</option>
+                <option value="Utang">Pencatatan Utang / Kewajiban</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Kategori Akun</label>
+              <select id="kategoriAkun" required>
+                <!-- Diberikan otomatis via JS -->
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Nominal (Rp)</label>
+              <input type="number" id="nominal" placeholder="Contoh: 100000" min="1" required />
+            </div>
+            <div class="form-group">
+              <label>Keterangan / Uraian</label>
+              <textarea id="keterangan" rows="3" placeholder="Contoh: Kas mingguan anggota Divisi Syiar" required></textarea>
+            </div>
+            <button type="submit" class="btn-submit">Simpan ke Jurnal</button>
+          </form>
+        </div>
+
+        <!-- RIWAYAT TRANSAKSI -->
+        <div class="box">
+          <h3>Jurnal Umum Organisasi</h3>
+          <table>
+            <thead>
+              <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th>Akun</th>
+                <th>Nominal</th>
+              </tr>
+            </thead>
+            <tbody id="tabelJurnalBody">
+              <tr><td colspan="4" style="text-align:center;">Memuat data...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: LAPORAN AKTIVITAS (LABA/RUGI) -->
+    <div id="tabLabaRugi" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center; margin-bottom: 5px;">IKATAN REMAJA MASJID (IRMA) MAN 3 BOGOR</h3>
+        <h4 style="text-align: center; margin-top: 0; color: #555;">LAPORAN AKTIVITAS & SISA DANA (LABA/RUGI)</h4>
+        <hr />
+        <table class="report-table">
+          <tr class="header-row"><td colspan="2">PENDAPATAN ORGANISASI</td></tr>
+          <tbody id="laporanPendapatan"></tbody>
+          <tr class="total-row">
+            <td>TOTAL PENDAPATAN DANA</td>
+            <td style="text-align: right;" id="rptTotalPendapatan">Rp 0</td>
+          </tr>
+
+          <tr><td colspan="2">&nbsp;</td></tr>
+
+          <tr class="header-row"><td colspan="2">BEBAN & PENGELUARAN KEGIATAN</td></tr>
+          <tbody id="laporanBeban"></tbody>
+          <tr class="total-row">
+            <td>TOTAL BEBAN KEGIATAN</td>
+            <td style="text-align: right;" id="rptTotalBeban">Rp 0</td>
+          </tr>
+
+          <tr><td colspan="2">&nbsp;</td></tr>
+
+          <tr class="header-row" style="background:#e8f5e9; color:#2a9d8f;">
+            <td>SURPLUS / DEFISIT PERIODE INI (SISA HASIL BUKTI)</td>
+            <td style="text-align: right;" id="rptSurplusDefisit">Rp 0</td>
+          </tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 3: LAPORAN POSISI KEUANGAN (NERACA) -->
+    <div id="tabNeraca" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center; margin-bottom: 5px;">IKATAN REMAJA MASJID (IRMA) MAN 3 BOGOR</h3>
+        <h4 style="text-align: center; margin-top: 0; color: #555;">LAPORAN POSISI KEUANGAN (NERACA)</h4>
+        <hr />
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
+          
+          <!-- SISI KIRI: ASET -->
+          <div>
+            <h4 style="color:#0077b6; border-bottom: 2px solid #0077b6; padding-bottom:5px;">ASET (AKTIVA)</h4>
+            <table class="report-table">
+              <tr class="header-row"><td colspan="2">Aset Lancar</td></tr>
+              <tr>
+                <td class="indent">Kas di Tangan / Bank</td>
+                <td style="text-align: right;" id="nrcKas">Rp 0</td>
+              </tr>
+              <tr class="header-row"><td colspan="2">Aset Tetap / Inventaris</td></tr>
+              <tbody id="nrcTabelAset"></tbody>
+              <tr class="total-row">
+                <td>TOTAL ASET</td>
+                <td style="text-align: right;" id="nrcTotalAset">Rp 0</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- SISI KANAN: KEWAJIBAN & SALDO DANA -->
+          <div>
+            <h4 style="color:#0077b6; border-bottom: 2px solid #0077b6; padding-bottom:5px;">KEWAJIBAN & EKUITAS</h4>
+            <table class="report-table">
+              <tr class="header-row"><td colspan="2">Kewajiban / Utang</td></tr>
+              <tbody id="nrcTabelUtang"></tbody>
+              <tr class="total-row">
+                <td>Total Kewajiban</td>
+                <td style="text-align: right;" id="nrcTotalUtang">Rp 0</td>
+              </tr>
+
+              <tr><td colspan="2">&nbsp;</td></tr>
+
+              <tr class="header-row"><td colspan="2">Ekuitas (Saldo Dana Organisasi)</td></tr>
+              <tr>
+                <td class="indent">Akumulasi Saldo Dana Organisasi</td>
+                <td style="text-align: right;" id="nrcSaldoDana">Rp 0</td>
+              </tr>
+              <tr class="total-row">
+                <td>TOTAL KEWAJIBAN & EKUITAS</td>
+                <td style="text-align: right;" id="nrcTotalPasiva">Rp 0</td>
+              </tr>
+            </table>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // FITUR SWITCH TAB
+    function bukaTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    // UPDATE PILIHAN KATEGORI SWA-SELEKSI
+    function updateKategoriOptions() {
+      const jenis = document.getElementById("jenisPost").value;
+      const selectKategori = document.getElementById("kategoriAkun");
+      selectKategori.innerHTML = "";
+
+      let options = [];
+
+      if (jenis === "Pendapatan") {
+        options = ["Iuran / Kas Mingguan Anggota", "Infaq / Donatur Hamba Allah", "Dana Bantuan Sekolah", "Hasil Bazaar / UDA (Usaha Dana)"];
+      } else if (jenis === "Beban") {
+        options = ["Beban Program Kerja Div. Syiar", "Beban Program Kerja Div. Humas", "Beban Konsumsi & Acara", "Beban ATK & Percetakan"];
+      } else if (jenis === "Aset") {
+        options = ["Inventaris Sound System / Mic", "Inventaris Karpet / Sajadah", "Inventaris Banner / Papan Informasi", "Aset Inventaris Lainnya"];
+      } else if (jenis === "Utang") {
+        options = ["Utang Cetak Spanduk", "Utang Perlengkapan Acara", "Kewajiban Lainnya"];
+      }
+
+      options.forEach(opt => {
+        const el = document.createElement("option");
+        el.value = opt;
+        el.textContent = opt;
+        selectKategori.appendChild(el);
+      });
+    }
+
+    updateKategoriOptions();
+
+    // SIMPAN JURNAL KE FIRESTORE
+    async function simpanJurnal(e) {
+      e.preventDefault();
+      const jenisPost = document.getElementById("jenisPost").value;
+      const kategoriAkun = document.getElementById("kategoriAkun").value;
+      const nominal = parseFloat(document.getElementById("nominal").value);
+      const keterangan = document.getElementById("keterangan").value;
+
+      try {
+        const { collection, addDoc, serverTimestamp } = window.fbTools;
+        await addDoc(collection(window.db, "jurnal_irma"), {
+          jenisPost,
+          kategoriAkun,
+          nominal,
+          keterangan,
+          waktu: serverTimestamp(),
+          tanggal: new Date().toLocaleDateString("id-ID")
+        });
+
+        alert("Transaksi berhasil dicatat ke dalam sistem akuntansi!");
+        document.getElementById("formAkuntansi").reset();
+        updateKategoriOptions();
+      } catch (error) {
+        console.error("Error menyimpan transaksi: ", error);
+        alert("Gagal menyimpan transaksi: " + error.message);
+      }
+    }
+
+    // MEMUAT KAS & OTOMATIS HITUNG LABA-RUGI & NERACA
+    function muatDataKas() {
+      const checkReady = setInterval(() => {
+        if (window.db && window.fbTools) {
+          clearInterval(checkReady);
+
+          const { collection, onSnapshot, query, orderBy } = window.fbTools;
+          const q = query(collection(window.db, "jurnal_irma"), orderBy("waktu", "desc"));
+
+          onSnapshot(q, (snapshot) => {
+            let totalPendapatan = 0;
+            let totalBeban = 0;
+            let totalAset = 0;
+            let totalUtang = 0;
+
+            let recapPendapatan = {};
+            let recapBeban = {};
+            let recapAset = {};
+            let recapUtang = {};
+
+            let htmlJurnal = "";
+
+            if (snapshot.empty) {
+              htmlJurnal = `<tr><td colspan="4" style="text-align:center;">Belum ada catatan jurnal transaksi.</td></tr>`;
+            } else {
+              snapshot.forEach((doc) => {
+                const data = doc.data();
+                const nom = data.nominal || 0;
+                const post = data.jenisPost;
+                const kat = data.kategoriAkun;
+
+                // Hitung total kelompok
+                if (post === "Pendapatan") {
+                  totalPendapatan += nom;
+                  recapPendapatan[kat] = (recapPendapatan[kat] || 0) + nom;
+                } else if (post === "Beban") {
+                  totalBeban += nom;
+                  recapBeban[kat] = (recapBeban[kat] || 0) + nom;
+                } else if (post === "Aset") {
+                  totalAset += nom;
+                  recapAset[kat] = (recapAset[kat] || 0) + nom;
+                } else if (post === "Utang") {
+                  totalUtang += nom;
+                  recapUtang[kat] = (recapUtang[kat] || 0) + nom;
+                }
+
+                const isPlus = (post === "Pendapatan" || post === "Utang");
+                const color = isPlus ? "#2a9d8f" : "#e76f51";
+
+                htmlJurnal += `
+                  <tr>
+                    <td>${data.tanggal || '-'}</td>
+                    <td>${data.keterangan || '-'}</td>
+                    <td><span class="badge ${isPlus ? 'badge-in' : 'badge-out'}">${kat}</span></td>
+                    <td style="font-weight:600; color: ${color};">
+                      Rp ${nom.toLocaleString("id-ID")}
+                    </td>
+                  </tr>
+                `;
+              });
+            }
+
+            // PERHITUNGAN AKUNTANSI
+            // Kas Bersih (Uang Tunai Organisasi) = Pendapatan - Beban - Pembelian Aset + Utang
+            const kasBersih = totalPendapatan - totalBeban - totalAset + totalUtang;
+            const surplusDefisit = totalPendapatan - totalBeban; // Laba/Rugi/Sisa Hasil
+            const totalAktiva = kasBersih + totalAset;
+            const totalPasiva = totalUtang + surplusDefisit;
+
+            // UPDATE CARDS UTAMA
+            document.getElementById("cardSaldo").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
+            document.getElementById("cardPendapatan").innerText = "Rp " + totalPendapatan.toLocaleString("id-ID");
+            document.getElementById("cardBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+            document.getElementById("cardAset").innerText = "Rp " + totalAset.toLocaleString("id-ID");
+            document.getElementById("tabelJurnalBody").innerHTML = htmlJurnal;
+
+            // RENDERING LAPORAN AKTIVITAS (LABA/RUGI)
+            let rptPendapatanHTML = "";
+            for (let k in recapPendapatan) {
+              rptPendapatanHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapPendapatan[k].toLocaleString("id-ID")}</td></tr>`;
+            }
+            document.getElementById("laporanPendapatan").innerHTML = rptPendapatanHTML || `<tr><td colspan="2" class="indent">-</td></tr>`;
+            document.getElementById("rptTotalPendapatan").innerText = "Rp " + totalPendapatan.toLocaleString("id-ID");
+
+            let rptBebanHTML = "";
+            for (let k in recapBeban) {
+              rptBebanHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapBeban[k].toLocaleString("id-ID")}</td></tr>`;
+            }
+            document.getElementById("laporanBeban").innerHTML = rptBebanHTML || `<tr><td colspan="2" class="indent">-</td></tr>`;
+            document.getElementById("rptTotalBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+            document.getElementById("rptSurplusDefisit").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+
+            // RENDERING LAPORAN POSISI KEUANGAN (NERACA)
+            document.getElementById("nrcKas").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
+
+            let nrcAsetHTML = "";
+            for (let k in recapAset) {
+              nrcAsetHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapAset[k].toLocaleString("id-ID")}</td></tr>`;
+            }
+            document.getElementById("nrcTabelAset").innerHTML = nrcAsetHTML || `<tr><td colspan="2" class="indent">Tidak ada inventaris tambahan</td></tr>`;
+            document.getElementById("nrcTotalAset").innerText = "Rp " + totalAktiva.toLocaleString("id-ID");
+
+            let nrcUtangHTML = "";
+            for (let k in recapUtang) {
+              nrcUtangHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapUtang[k].toLocaleString("id-ID")}</td></tr>`;
+            }
+            document.getElementById("nrcTabelUtang").innerHTML = nrcUtangHTML || `<tr><td colspan="2" class="indent">Tidak Ada Utang (Rp 0)</td></tr>`;
+            document.getElementById("nrcTotalUtang").innerText = "Rp " + totalUtang.toLocaleString("id-ID");
+            document.getElementById("nrcSaldoDana").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+            document.getElementById("nrcTotalPasiva").innerText = "Rp " + totalPasiva.toLocaleString("id-ID");
+          });
+        }
+      }, 200);
+    }
+  </script>
+</body>
+</html>
