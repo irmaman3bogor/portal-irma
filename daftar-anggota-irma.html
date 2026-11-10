@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Daftar Anggota IRMA - Portal IRMA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    body { font-family: 'Poppins', sans-serif; background: #f4f7f6; padding: 20px; margin: 0; }
+    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 1200px; margin: 0 auto; }
+    h2 { color: #0a3622; text-align: center; margin-top: 0; }
+    
+    table { width: 100%; border-collapse: collapse; font-size: 12px; margin-top: 15px; }
+    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; vertical-align: top; }
+    th { background: #0a3622; color: white; position: sticky; top: 0; z-index: 10; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #eef9ff; }
+    
+    .badge { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; display: inline-block; }
+    .badge-x { background: #e3f2fd; color: #1565c0; }
+    .badge-xi { background: #f3e5f5; color: #7b1fa2; }
+    
+    .table-container { overflow-x: auto; max-height: 70vh; overflow-y: auto; }
+    
+    body.di-dalam-iframe .btn-back { display: none; }
+    .btn-back { display: inline-block; background: #e2e8f0; color: #333; padding: 10px 20px; border-radius: 8px; text-decoration: none; font-weight: bold; margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <a href="beranda.html" class="btn-back">⬅ Kembali ke Dashboard</a>
+    <h2>📋 Daftar Anggota IRMA MAN 3 Bogor</h2>
+    
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th style="width: 40px;">No</th>
+            <th>Nama Lengkap</th>
+            <th>NISN</th>
+            <th>NIS</th>
+            <th>Kelas</th>
+            <th>Alamat</th>
+            <th>No. HP</th>
+            <th>Nama Orang Tua</th>
+            <th>No. HP Orang Tua</th>
+            <th>Moto Hidup</th>
+          </tr>
+        </thead>
+        <tbody id="tabelAnggotaBody">
+          <tr><td colspan="10" style="text-align:center; padding: 20px;">Memuat data...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Data Anggota (Dari Excel)
+    const dataAnggota = [
+      { nama: "NAZWA MAYSHA ANDINI", nisn: "0106675269", nis: "131132010002250240", kelas: "X9", alamat: "Kp. Menan rt/rw 002, des. Sukamaju, kec. Jonggol, kab. Bogor, provinsi. Jabar", noHp: "085715395978", ortu: "Sity maemunah", hpOrtu: "085860823876", moto: "Jadilah ikan hidup yang selalu melawan arus, jangan jadi ikan mati yang hanya mengikuti arus dunia yang tak ada ujungnya." },
+      { nama: "Dinda marveli restiyanti", nisn: "0111986611", nis: "131132010002260122", kelas: "X3", alamat: "kp.cipeucang.rt 02 RW 01 desa cipeucang, Cileungsi (toko sembako src) cilengsi kab Bogor, Jawa barat, depan lapo humbang samping fitnes farah dagang bensin, Cipeucang, Cileungsi, Kabupaten Bogor, Jawa Barat, Indonesia", noHp: "088289958869", ortu: "hj.catur sayekti", hpOrtu: "085891057989", moto: "cantiknya sederhana, anggunnya luar biasa" },
+      { nama: "Bintang Rafa Zaviero", nisn: "0108931786", nis: "131132010002260093", kelas: "X6", alamat: "Citra indah, bukit agave, i19 no 21", noHp: "081995862037", ortu: "Eva nurachma", hpOrtu: "087788597240", moto: "لا تيأس عند ما لا يتحقق لك امر حاول مرارا و تكرارا فقطرة المطر تخرص صخرى ليس بالعنف ولكن بالتكرارا" },
+      { nama: "Muhamad Zahran al firdaus", nisn: "0108161570", nis: "232407043.0", kelas: "X10", alamat: "Kp rawajeler rt 02 RW 01 desa Bojong kec klapanunggal kab bogor", noHp: "085604853632", ortu: "Tini haryanti", hpOrtu: "089513473538", moto: "Tidak ada jalan tanpa debu<br>Tidak ada kesuksesan tanpa doa ibu" },
+      { nama: "Elvira Syahreza Farah Ardhani", nisn: "0119266853", nis: "131132010002260128", kelas: "X6", alamat: "GRIYA CILEUNGSI 31. 16/3 DESA CILEUNGSI, KEC. CILEUNGSI, KAB. BOGOR, JAWA BARAT", noHp: "085779036394", ortu: "Tri wintarti", hpOrtu: "08815348708", moto: "Jangan sibuk menjadi lebih baik dari orang lain, cukup jadilah lebih baik dari dirimu yang kemarin.🤍" },
+      { nama: "Abdurrahman ghofar", nisn: "0111915556", nis: "131132010002260004", kelas: "X6", alamat: "Rt 02 RW 06<br>Alamat jln elang IX", noHp: "085852502609", ortu: "Ayah:m yusuf, ibu : widia Okta viana", hpOrtu: "085811436652", moto: "Hanya yg terkuat yg boleh mengatur" },
+      { nama: "Kayla indah nur aulia", nisn: "0104127893", nis: "232407008.0", kelas: "X5", alamat: "perumahan pondok permata cileungsi blok f1 No 15 , Rt01 /Rw02 bojong klapanunggal bogor Jawa barat", noHp: "085881587308", ortu: "Siswanto", hpOrtu: "085894177765", moto: "TERWUJUD ATAU TIDAK TERWUJUD TETAPLAH BERSUJUD" },
+      { nama: "VALYA AULIA PUTRI", nisn: "0092772896", nis: "131132010002250331", kelas: "XI.8", alamat: "Haurkuning, RT 03/ RW 03, Jonggol", noHp: "085893070961", ortu: "Yadi Mulyadi & Adeh", hpOrtu: "085814046113", moto: "Jangan ingat lelahnya belajar, tapi ingan manisnya yang bisa dipetik kelak ketika sukses" },
+      { nama: "RAFIFAH HAZNA RAHDATUL AISY", nisn: "0117432569", nis: "0117432569", kelas: "X9", alamat: "Perum Cibarusah indah blok C8 no 06 RT 02 RW 08 , keluharan Cibarusah, kabupaten bekasi, kacamatan Cibarusah", noHp: "085217500260", ortu: "Suparyono", hpOrtu: "082213097827", moto: "Hidup sekali, jangan dibuat ribet :)" },
+      { nama: "Nabila Qonita", nisn: "0104636995", nis: "131132010002260280", kelas: "X11", alamat: "Kp Dayeuh Desa Sukanegara Kec Jonggol", noHp: "083862280053", ortu: "R.Ibnu Adam S,pdi , Aida Rahma S,pd", hpOrtu: "082310777833", moto: "proses tidak akan mengkhianati hasil" },
+      { nama: "MAULANA SHOLEH MANSURUDIN", nisn: "0106701536", nis: "131132010002250165", kelas: "XI.2", alamat: "Jalan rawa gumbira , RT/RW. 03/04 kp, nyalindung kec , Jonggol, kan , bogor", noHp: "085122981676", ortu: "Abdul khoerudin s.pdi", hpOrtu: "081316166480", moto: "Jadilah manusia yang sejati , tanpa ada merasa yang paling tinggi" },
+      { nama: "Rifda Aprilia Holilah", nisn: "0107332809", nis: "131132010002250280", kelas: "XI.7", alamat: "Kp. Haur kuning, RT03/RW03 kec.jongggol,desa.jonggol, kab. Bogor, jawa barat", noHp: "08999318633", ortu: "Ayah:Muhammad Holil, ibu:Mimin mintarsih", hpOrtu: "085716274513", moto: "Tidak semua yang terlambat itu tertinggal, karena setiap orang memiliki waktunya sendiri untuk bersinar" },
+      { nama: "FITRI AL THOFUNNISA", nisn: "0101019613", nis: "131132010002260158", kelas: "X11", alamat: "kp.cihaur desa singasari RT 01 RW 01", noHp: "085770767629", ortu: "samah dan kinung", hpOrtu: "082111663951", moto: "barang siapa yang bersungguh-sungguh maka dapatlah ia" },
+      { nama: "Alfath rahmathul syafar", nisn: "0104532240", nis: "171801008.0", kelas: "X11", alamat: "Vilasuryajaya AA5/19 RT 06/09 situsari cilengsi bogor", noHp: "089528637772", ortu: "budiyanto", hpOrtu: "082125026749", moto: "mencari ilmu setinggi tingginya dan keberkahan" },
+      { nama: "Naelul Hasanah", nisn: "0106900516", nis: "131132010002260288", kelas: "X11", alamat: "Kp.panangga rt.02 tw.05 desa gandoang kec.cileungsi kab.bogor", noHp: "081584285305", ortu: "Wahyudin & Aidah latifah", hpOrtu: "085773577577", moto: "Jangan bilang ga mungkin because we will never know the real answer before we try, just trust to allah" },
+      { nama: "Nur Fajri Irawan", nisn: "0103842662", nis: "13113201000250245", kelas: "XI.9", alamat: "kp,leuwijati RT 01/RW 07 desa.Sukanegara/ kec.Jonggol", noHp: "085885392972", ortu: "DENNY IRAWAN", hpOrtu: "081211549573", moto: "\"you can if you think you can\"<br>kamu bisa jika kamu berfikir kamu bisa" },
+      { nama: "Zahra Aulia Chaerunisa", nisn: "0092832772", nis: "0.0", kelas: "XI.1", alamat: "Desa Sukamaju, Citra Indah City Bukit Cendana J.18 No.15", noHp: "087788748115", ortu: "Achmad Chaerullah", hpOrtu: "082157193329", moto: "coba saja dahulu sebelum mulai" },
+      { nama: "Muhammad Ramdhan putra aji", nisn: "0104409058", nis: "131132010002260268", kelas: "X11", alamat: "Perum citra indah bukit Cempaka Y1/37<br>Rt,05 RW,08, kelurahan sukamaju", noHp: "085196113641", ortu: "Aji poncosono/Dwi Hastuti", hpOrtu: "081289969356", moto: "Barang siapa yg bersungguh sungguh maka ia akan Mendapatkan ny" },
+      { nama: "Wahyu Rifa'atuz Zahra", nisn: "0098814361", nis: "131132010002250337", kelas: "XI.9", alamat: "perumahan citra indah, bukit palem s8/29 . Rt 06 Rw 10, kec jonggol, Des. sukamaju, kab.Bogor", noHp: "085717158607", ortu: "Kusromdhoni", hpOrtu: "085731024117", moto: "\"Jangan takut gagal, karna kegagalan kunci dari sebuah kesuksesan\"" },
+      { nama: "Bayu Mustiko Aji Malibari", nisn: "0096601495", nis: "131132010002250072", kelas: "XI.2", alamat: "<br>Citra Indah City, Bukit Mahoni T11/8, Desa Sukamaju, Kecamatan Jonggol, Kabupaten Bogor, Provinsi Jawa Barat", noHp: "085714979114", ortu: "Raden", hpOrtu: "081285216545", moto: "Jadilah Diri Sendiri Untuk Mencapai Batasmu Dan Menghancurkan Batasmu" },
+      { nama: "Muhammad Nizam Muharram", nisn: "0103199923", nis: "1311132010002250204", kelas: "XI.8", alamat: "kp.CIUKUY RT 02/RW 03, KECAMATAN JONGGOL, KABUPATEN BOGOR", noHp: "08568267646", ortu: "Ike Herlina & Supriatna", hpOrtu: "081511373384", moto: "kegagalan berasal dari rasa takut yang tidak di lawan" },
+      { nama: "IRGI SETIAWAN", nisn: "0096561769", nis: "131132010002250138", kelas: "XI.8", alamat: "kp.Nyalindung, desa.Sukamaju, kec.Jonggol, kab.Bogor RT.02/RW.05", noHp: "085776289350", ortu: "AISAH", hpOrtu: "0895428279038", moto: "Jadilah versi terbaik dari dirimu sendiri." },
+      { nama: "Erlangga Lousesatria Bahri", nisn: "3109216043.0", nis: "131132010002260131", kelas: "X6", alamat: "Perumahan Pesona Situsari sejahtera blok D4 no 13 Kab Bogor Kec cileungsi Des Situsari", noHp: "089515593857", ortu: "Sulistiani", hpOrtu: "0895360210022", moto: "\"Pengalaman adalah guru terbaik \"" },
+      { nama: "Zahra Maulida", nisn: "0104965743", nis: "131132010002250341", kelas: "XI.9", alamat: "kp kepang, RT 02/RW 06, singajaya", noHp: "0895384502847", ortu: "Solihin", hpOrtu: "0895333534313", moto: "jadilah versi terbaik dari dirimu sendiri" },
+      { nama: "syifa rahmadani", nisn: "0097376081", nis: "131132010002250321", kelas: "XI.9", alamat: "Kp.rawa makmur rt 04/02 desa.singajaya kec.jonggol kab.bogor 16830", noHp: "085695835628", ortu: "asep saepuloh", hpOrtu: "08567875319", moto: "jadilah versi terbaik dari diri mu sendiri" },
+      { nama: "FARAS FADILAH RAMADHAN", nisn: "0098778557", nis: "131132010002250133", kelas: "XI.3", alamat: "kp. nyalindung RT 02/05 desa sukamaju kecamatan jonggol kabupaten bogor nomor 29", noHp: "081514464442", ortu: "Ayah : sargo Ibu : Marfu'ah", hpOrtu: "085776582495", moto: "gagallah dahulu, baru akan berhasil" },
+      { nama: "Meiliza Lova", nisn: "0101221471", nis: "131132010002260233", kelas: "X7", alamat: "perum.permata puri harmoni 2 blok h4 no 58 RT 03 RW 16 Desa situsari Kec.Cileungsi kab.bogor", noHp: "085720666603", ortu: "Ayah: Sugianto Ibu: Nursi Ersila", hpOrtu: "08159345285", moto: "\"Kegagalan hari ini adalah bahan bakar untuk esok hari\"" },
+      { nama: "Putra Radja Alhardana", nisn: "0104794994", nis: "131132010002250253", kelas: "XI.2", alamat: "Kampung Ceger, RT 01/ RW 06, Desa Sukamaju, Kec. Jonggol, Kab. Bogor, Id 16830", noHp: "089516451906", ortu: "Al Qadri", hpOrtu: "082124844312", moto: "Belajar hari ini, Sukses esok hari" },
+      { nama: "Muhammad Nazmi Khalil", nisn: "0107959835", nis: "222307073.0", kelas: "XI.2", alamat: "Perum Sukma indah residence blok C10 no 6", noHp: "088212796952", ortu: "Rinaldi", hpOrtu: "088212796952", moto: "...." },
+      { nama: "Muhamad Rifky Rizqullah", nisn: "0102251085", nis: "131132010002260245", kelas: "X9", alamat: "Jalan kampung Cikupa RT 01, RW 01 desa.sukaresmi kec.sukamakmur kab.bogor", noHp: "085771126241", ortu: "Nia", hpOrtu: "081519461195", moto: "Apa yang menjadi takdirmu,tidak akan melewatkanmu" },
+      { nama: "rasya athar maulana", nisn: "0109370504", nis: "131132010002250269", kelas: "XI.4", alamat: "perumahan citra indah cluster Azalea AF 02 no 11", noHp: "085122949875", ortu: "dedi sutomo", hpOrtu: "085194999386", moto: "jangan gambang menyerah" },
+      { nama: "Wafi Nur Razan", nisn: "0105810869", nis: "131132010002250335", kelas: "XI.9", alamat: "Citra Indah City Bukit Ravenia Blok AQ 11 No 11", noHp: "085692639388", ortu: "Nur Halim", hpOrtu: "087707071070", moto: "Tidak apa terus di remehkan,asalkan skill trus berkembang" },
+      { nama: "Naila Afni Huwaida", nisn: "0094729768", nis: "131132010002250225", kelas: "XI.3", alamat: "PERUM TNI AL, sukamanah jonngol bogor, RT 08 / RW 03", noHp: "085810278865", ortu: "Ahmad Firdaus Albar", hpOrtu: "085880013683", moto: "bukan tentang menjadi yang terbaik, tetapi terus menjadi lebih baik" },
+      { nama: "RINDU SALWA NAYLA SUCI", nisn: "0107791772", nis: "13113201000250281", kelas: "XI.7", alamat: "kp.cipicung RT 14 RW 06 desa Mekarsari kec.cileungsi kab bogor prov. Jawa barat", noHp: "089605511600", ortu: "Sanusi", hpOrtu: "0895635403783", moto: "Lurus dalam niat, ikhlas dalam langkah." },
+      { nama: "Lutfi Cahaya Ramadan", nisn: "0099591154", nis: "131132010002250160", kelas: "XI.8", alamat: "Citra Indah Bukit Pinus Blok q no 19/56 RT.002/010, Kel sukamaju", noHp: "085719321181", ortu: "Wartono", hpOrtu: "085218758023", moto: "bahagia itu sederhana" },
+      { nama: "irma", nisn: "0119055699", nis: "202020206094.0", kelas: "X1", alamat: "jalan Singasari kp Cikaret rt 02 RW 09", noHp: "083891684675", ortu: "oman", hpOrtu: "085710700164", moto: "\"langkah kecil hari ini perubahan besar untuk masa depan\"" },
+      { nama: "Muhammad Reyhan Adriyansyah Saepudin", nisn: "0102922460", nis: "131132010002250209", kelas: "XI.6", alamat: "Permata puri harmoni 2 blok J3 nomer 19", noHp: "081286268831", ortu: "Bapak Saepudin", hpOrtu: "0818754359", moto: "Jangan berkembang biak sebelum berkembang baik" },
+      { nama: "Nazran multaz wijaya", nisn: "0104270329", nis: "131132010002260306", kelas: "X9", alamat: "Jalan masjid Baiturrahmah no98 rt01 rw02 kp gandoang", noHp: "085941134983", ortu: "Nendi wijaya", hpOrtu: "082113149352", moto: "Kalau tidak bisa menjadi yang terbaik maka jadilah yang paling bermanfaat" },
+      { nama: "Silvia Azzahra", nisn: "0109720813", nis: "171801046.0", kelas: "X8", alamat: "kp.ciukuy RT 03/RW 04 desa Singasari kec.jonggol kab.bogor", noHp: "085771003804", ortu: "ayah:Anin Saprudin,mamah:cucum", hpOrtu: "089625794765", moto: "bangkit dan teruslah melangkah" },
+      { nama: "Muhammad Alfatih", nisn: "0091363821", nis: "242508292.0", kelas: "X11", alamat: "Jl. INKOPAU KAV. 179 NO. 164. RT/RW:012/006 Desa Bojong, Klapanunggal, Bogor, Jawa Barat.", noHp: "089523604499", ortu: "DJUMHANA", hpOrtu: "087750220855", moto: "Semua Aktivitas/Setiap hal yang kita lakukan, Diniatkan Karena Allah Swt agar mendapatkan Berkah dan Ridho-nya" },
+      { nama: "SITI HANIFAH MUTHMAINAH", nisn: "0117812751", nis: "232471157.0", kelas: "X11", alamat: "Perum Nila Alam Permai Blok A No.19 RT 026 RW 002 kampung Cipeucang kec. Cileungsi kab. Bogor, Provinsi Jawa Barat", noHp: "085220082075", ortu: "SITI ROHATUN AENI", hpOrtu: "081288154430", moto: "Dengan iman dan akhlak saya menjadi KUAT tanpa iman dan akhlak saya menjadi LEMAH" },
+      { nama: "Nazwan Nadhif Lesmana", nisn: "0092087652", nis: "1311322010002250241", kelas: "XI.6", alamat: "Kp ceger rt 05/rw 06 desa sukamaju no 57", noHp: "085714850935", ortu: "Siti khodijah", hpOrtu: "085883611804", moto: "Berusaha menjadi lebih baik dari sebelumnya" },
+      { nama: "AHMAD ALPIN MUBAROK", nisn: "0111584096", nis: "121232010054230004", kelas: "X2", alamat: "kec, sukamakmurr, kp.limus nunggal", noHp: "085892924297", ortu: "anih", hpOrtu: "085891182025", moto: "slaluu trus bangkit jika terjatuh, dan slaluu blajar dari kesalahan" }
+    ];
+
+    function renderTable() {
+      const tbody = document.getElementById("tabelAnggotaBody");
+      let html = "";
+      
+      dataAnggota.forEach((d, index) => {
+        // Tentukan warna badge kelas
+        const isXI = d.kelas.toUpperCase().includes("XI");
+        const badgeClass = isXI ? "badge-xi" : "badge-x";
+        
+        html += `
+          <tr>
+            <td style="text-align:center;">${index + 1}</td>
+            <td><b>${d.nama}</b></td>
+            <td>${d.nisn}</td>
+            <td>${d.nis}</td>
+            <td style="text-align:center;"><span class="badge ${badgeClass}">${d.kelas}</span></td>
+            <td>${d.alamat}</td>
+            <td>${d.noHp}</td>
+            <td>${d.ortu}</td>
+            <td>${d.hpOrtu}</td>
+            <td style="font-style:italic; color:#555;">"${d.moto}"</td>
+          </tr>
+        `;
+      });
+      
+      tbody.innerHTML = html;
+    }
+
+    window.onload = renderTable;
+  </script>
+</body>
+</html>
