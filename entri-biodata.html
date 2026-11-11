@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Entri Biodata - Portal IRMA</title>
   <style>
-    /* CSS Polos, tanpa sidebar, agar menyatu di dalam iframe */
+    /* CSS Polos, tanpa sidebar */
     body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
     .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
@@ -19,7 +19,6 @@
 </head>
 <body>
 
-  <!-- HANYA FORM INI, TANPA SIDEBAR ADMIN -->
   <div class="card">
     <h2>📝 Entri Biodata Siswa</h2>
     
@@ -59,7 +58,7 @@
   <script>
     function simpanBiodata(e) {
       e.preventDefault();
-      alert("Biodata berhasil disimpan! (Sambungkan ke Firebase jika ingin permanen)");
+      alert("Biodata berhasil disimpan!");
       document.getElementById("formBiodata").reset();
     }
   </script>
