@@ -303,3 +303,389 @@
           <tr><td colspan="2">&nbsp;</td></tr>
           <tr class="header-row"><td colspan="2">PERUBAHAN MODAL</td></tr>
           <tr><td class="indent">(+) Surplus Bersih</td><td style="text-align: right;" id="mdlSurplus">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="total-row" style="background:#e8f5e9; color:#2a9d8f;"><td>MODAL AKHIR</td><td style="text-align: right;" id="mdlAkhir">Rp 0</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB CASH FLOW -->
+    <div id="tabCashFlow" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center;">LAPORAN ARUS KAS</h3>
+        <table class="report-table">
+          <tr class="header-row"><td colspan="2">AKTIVITAS OPERASI</td></tr>
+          <tr><td class="indent">(+) Pendapatan</td><td style="text-align: right;" id="cfPendapatan">Rp 0</td></tr>
+          <tr><td class="indent">(-) Beban</td><td style="text-align: right;" id="cfBeban">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Operasi</td><td style="text-align: right;" id="cfOperasi">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="header-row"><td colspan="2">AKTIVITAS INVESTASI</td></tr>
+          <tr><td class="indent">(-) Pembelian Aset</td><td style="text-align: right;" id="cfAset">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Investasi</td><td style="text-align: right;" id="cfInvestasi">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="header-row"><td colspan="2">AKTIVITAS PENDANAAN</td></tr>
+          <tr><td class="indent">(+) Utang</td><td style="text-align: right;" id="cfUtang">Rp 0</td></tr>
+          <tr><td class="indent">(+) Modal</td><td style="text-align: right;" id="cfModal">Rp 0</td></tr>
+          <tr class="total-row"><td>Arus Kas Pendanaan</td><td style="text-align: right;" id="cfPendanaan">Rp 0</td></tr>
+          <tr><td colspan="2">&nbsp;</td></tr>
+          <tr class="total-row" style="background:#eef9ff; color:#0077b6;"><td>KENAIKAN KAS BERSIH</td><td style="text-align: right;" id="cfTotal">Rp 0</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB GRAFIK -->
+    <div id="tabGrafik" class="tab-content">
+      <div class="box">
+        <h3 style="text-align: center;">GRAFIK KEUANGAN</h3>
+        <div class="grafik-container">
+          <canvas id="grafikKeuangan"></canvas>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    let chartInstance = null;
+    const NOMINAL_IURAN = 10000;
+    const daftarBulan = ["juli", "agustus", "september", "oktober", "november", "desember", "januari", "februari", "maret", "april", "mei", "juni"];
+
+    function logout() {
+      if (confirm("Yakin ingin keluar dari Dashboard Bendahara?")) {
+        localStorage.removeItem("irmaLogin");
+        localStorage.removeItem("userLoginData");
+        window.location.href = "index.html";
+      }
+    }
+
+    function bukaTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+      document.getElementById(tabId).classList.add('active');
+      event.currentTarget.classList.add('active');
+    }
+
+    function updateKategoriOptions() {
+      const jenis = document.getElementById("jenisPost").value;
+      const selectKategori = document.getElementById("kategoriAkun");
+      selectKategori.innerHTML = "";
+      let options = [];
+      if (jenis === "Pendapatan") options = ["411 - Iuran / Kas Bulanan", "412 - Infaq / Donatur", "413 - Dana Bantuan Sekolah", "414 - Hasil Bazaar / UDA"];
+      else if (jenis === "Beban") options = ["511 - Beban Div. Syiar", "512 - Beban Div. Humas", "513 - Beban Konsumsi", "514 - Beban ATK"];
+      else if (jenis === "Aset") options = ["121 - Inventaris Sound System", "122 - Inventaris Karpet", "123 - Inventaris Banner", "124 - Aset Lainnya"];
+      else if (jenis === "Utang") options = ["211 - Utang Cetak Spanduk", "212 - Utang Perlengkapan", "213 - Kewajiban Lainnya"];
+      else if (jenis === "Modal") options = ["311 - Modal Awal Organisasi", "312 - Setoran Dana Khusus"];
+      options.forEach(opt => {
+        const el = document.createElement("option");
+        el.value = opt; el.textContent = opt;
+        selectKategori.appendChild(el);
+      });
+    }
+    updateKategoriOptions();
+
+    async function simpanJurnal(e) {
+      e.preventDefault();
+      const editId = document.getElementById("editId").value;
+      const jenisPost = document.getElementById("jenisPost").value;
+      const kategoriAkun = document.getElementById("kategoriAkun").value;
+      const nominal = parseFloat(document.getElementById("nominal").value);
+      const keterangan = document.getElementById("keterangan").value;
+
+      try {
+        const { collection, addDoc, doc, updateDoc, serverTimestamp } = window.fbTools;
+        if (editId) {
+          await updateDoc(doc(window.db, "jurnal_irma", editId), { jenisPost, kategoriAkun, nominal, keterangan });
+          alert("Transaksi diperbarui!");
+        } else {
+          await addDoc(collection(window.db, "jurnal_irma"), {
+            jenisPost, kategoriAkun, nominal, keterangan,
+            waktu: serverTimestamp(),
+            tanggal: new Date().toLocaleDateString("id-ID")
+          });
+          alert("Transaksi dicatat!");
+        }
+        document.getElementById("formAkuntansi").reset();
+        document.getElementById("editId").value = "";
+        document.getElementById("btnSimpan").textContent = "Simpan ke Jurnal";
+        document.getElementById("btnBatal").style.display = "none";
+        updateKategoriOptions();
+      } catch (error) {
+        console.error("Error: ", error);
+        alert("Gagal menyimpan: " + error.message);
+      }
+    }
+
+    window.editData = async function(id, jenisPost, kategoriAkun, nominal, keterangan) {
+      document.getElementById("editId").value = id;
+      document.getElementById("jenisPost").value = jenisPost;
+      updateKategoriOptions();
+      document.getElementById("kategoriAkun").value = kategoriAkun;
+      document.getElementById("nominal").value = nominal;
+      document.getElementById("keterangan").value = keterangan;
+      document.getElementById("btnSimpan").textContent = "Update Jurnal";
+      document.getElementById("btnBatal").style.display = "block";
+      window.scrollTo(0, 0);
+    }
+
+    window.batalEdit = function() {
+      document.getElementById("formAkuntansi").reset();
+      document.getElementById("editId").value = "";
+      document.getElementById("btnSimpan").textContent = "Simpan ke Jurnal";
+      document.getElementById("btnBatal").style.display = "none";
+      updateKategoriOptions();
+    }
+
+    window.hapusData = async function(id) {
+      if (!confirm("Yakin ingin menghapus transaksi ini?")) return;
+      try {
+        const { doc, deleteDoc } = window.fbTools;
+        await deleteDoc(doc(window.db, "jurnal_irma", id));
+        alert("Transaksi dihapus!");
+      } catch (error) {
+        console.error("Error hapus: ", error);
+        alert("Gagal menghapus: " + error.message);
+      }
+    }
+
+    // FUNGSI MEMUAT DATA SISWA & PEMILAHAN KELAS X DAN XI YANG TEPAT
+    async function muatDataSiswaIuran(totalIuranCallback) {
+      const checkReady = setInterval(async () => {
+        if (window.db && window.fbTools) {
+          clearInterval(checkReady);
+          const { collection, getDocs, getDoc, doc } = window.fbTools;
+          
+          try {
+            let siswaSnap = await getDocs(collection(window.db, "biodata_siswa"));
+            if (siswaSnap.empty) {
+              siswaSnap = await getDocs(collection(window.db, "AnggotaIRMA"));
+            }
+
+            const tbody10 = document.getElementById("tabelKelas10Body");
+            const tbody11 = document.getElementById("tabelKelas11Body");
+            
+            tbody10.innerHTML = "";
+            tbody11.innerHTML = "";
+            
+            let no10 = 1, no11 = 1;
+            let totalNominalIuranSiswa = 0;
+
+            if (siswaSnap.empty) {
+              tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              if (typeof totalIuranCallback === 'function') totalIuranCallback(0);
+              return;
+            }
+
+            for (const docSiswa of siswaSnap.docs) {
+              const siswa = docSiswa.data();
+              const siswaId = docSiswa.id;
+              
+              const namaSiswa = siswa.nama || siswa["Nama Lengkap"] || siswa.namaLengkap || siswa.fullName || "-";
+              const kelasSiswa = siswa.kelas || siswa.Kelas || siswa.rombel || "-";
+              const nisnSiswa = siswa.nisn || siswa.NISN || siswa.nis || siswa.noId || "-";
+              const kelasStr = String(kelasSiswa).trim().toUpperCase();
+
+              // Ambil data iuran siswa
+              const iuranSnap = await getDoc(doc(window.db, "iuran_bulanan", siswaId));
+              const iuranData = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
+              const statusBulan = iuranData.bulan || {};
+
+              let tr = document.createElement("tr");
+              let htmlTD = `
+                <td class="text-center">__NO__</td>
+                <td class="text-center"><strong>${nisnSiswa}</strong></td>
+                <td>${namaSiswa}</td>
+                <td class="text-center">${kelasSiswa}</td>
+              `;
+
+              daftarBulan.forEach(bulan => {
+                const isChecked = statusBulan[bulan] ? "checked" : "";
+                if (isChecked) totalNominalIuranSiswa += NOMINAL_IURAN;
+                htmlTD += `<td class="text-center"><input type="checkbox" class="checkbox-iuran" ${isChecked} onchange="updateIuranSiswa('${siswaId}', '${bulan}', this.checked)"></td>`;
+              });
+
+              tr.innerHTML = htmlTD;
+
+              // PEMILAHAN KELAS YANG AKURAT
+              if (kelasStr.includes("XI") || kelasStr.startsWith("11")) {
+                tr.innerHTML = tr.innerHTML.replace("__NO__", no11++);
+                tbody11.appendChild(tr);
+              } else {
+                tr.innerHTML = tr.innerHTML.replace("__NO__", no10++);
+                tbody10.appendChild(tr);
+              }
+            }
+
+            if (tbody10.innerHTML === "") tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas X.</td></tr>`;
+            if (tbody11.innerHTML === "") tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas XI.</td></tr>`;
+
+            if (typeof totalIuranCallback === 'function') {
+              totalIuranCallback(totalNominalIuranSiswa);
+            }
+          } catch (e) {
+            console.error("Gagal memuat iuran siswa:", e);
+          }
+        }
+      }, 300);
+    }
+
+    // EVENT SAAT CHECKBOX IURAN DIKLIK
+    window.updateIuranSiswa = async function(siswaId, bulan, isChecked) {
+      const { doc, getDoc, setDoc } = window.fbTools;
+      const iuranRef = doc(window.db, "iuran_bulanan", siswaId);
+      try {
+        const iuranSnap = await getDoc(iuranRef);
+        let data = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
+        if (!data.bulan) data.bulan = {};
+
+        data.bulan[bulan] = isChecked;
+        data.updatedAt = new Date().toISOString();
+
+        await setDoc(iuranRef, data, { merge: true });
+        muatDataKas(); // Refresh ulang laporan keuangan & tabel iuran
+      } catch (error) {
+        alert("Gagal memperbarui iuran: " + error.message);
+      }
+    }
+
+    function muatDataKas() {
+      const checkReady = setInterval(() => {
+        if (window.db && window.fbTools) {
+          clearInterval(checkReady);
+          const { collection, onSnapshot, query, orderBy } = window.fbTools;
+          const q = query(collection(window.db, "jurnal_irma"), orderBy("waktu", "asc"));
+
+          onSnapshot(q, (snapshot) => {
+            let totalPendapatanJurnal = 0, totalBeban = 0, totalAset = 0, totalUtang = 0, totalModal = 0;
+            let recapPendapatan = {}, recapBeban = {}, recapAset = {}, recapUtang = {};
+            let htmlJurnal = "";
+            let dataGrafik = { labels: [], pemasukan: [], pengeluaran: [] };
+
+            muatDataSiswaIuran((totalIuranSiswa) => {
+              totalPendapatanJurnal += totalIuranSiswa;
+              if (totalIuranSiswa > 0) {
+                recapPendapatan["411 - Iuran / Kas Bulanan Siswa"] = totalIuranSiswa;
+              }
+
+              if (snapshot.empty) {
+                htmlJurnal = `<tr><td colspan="5" style="text-align:center;">Belum ada jurnal.</td></tr>`;
+              } else {
+                snapshot.forEach((doc) => {
+                  const data = doc.data();
+                  const nom = data.nominal || 0;
+                  const post = data.jenisPost;
+                  const kat = data.kategoriAkun;
+
+                  if (post === "Pendapatan" || post === "Modal") {
+                     dataGrafik.pemasukan.push(nom); dataGrafik.pengeluaran.push(0);
+                  } else {
+                     dataGrafik.pemasukan.push(0); dataGrafik.pengeluaran.push(nom);
+                  }
+                  dataGrafik.labels.push(data.tanggal || '-');
+
+                  if (post === "Pendapatan") { totalPendapatanJurnal += nom; recapPendapatan[kat] = (recapPendapatan[kat] || 0) + nom; }
+                  else if (post === "Beban") { totalBeban += nom; recapBeban[kat] = (recapBeban[kat] || 0) + nom; }
+                  else if (post === "Aset") { totalAset += nom; recapAset[kat] = (recapAset[kat] || 0) + nom; }
+                  else if (post === "Utang") { totalUtang += nom; recapUtang[kat] = (recapUtang[kat] || 0) + nom; }
+                  else if (post === "Modal") { totalModal += nom; }
+
+                  const isPlus = (post === "Pendapatan" || post === "Utang" || post === "Modal");
+                  const color = isPlus ? "#2a9d8f" : "#e76f51";
+
+                  htmlJurnal = `
+                    <tr>
+                      <td>${data.tanggal || '-'}</td>
+                      <td>${data.keterangan || '-'}</td>
+                      <td><span class="badge ${isPlus ? 'badge-in' : 'badge-out'}">${kat}</span></td>
+                      <td style="font-weight:600; color: ${color};">Rp ${nom.toLocaleString("id-ID")}</td>
+                      <td>
+                        <button class="action-btn btn-edit" onclick="editData('${doc.id}', '${post}', '${kat}', ${nom}, '${data.keterangan}')">Edit</button>
+                        <button class="action-btn btn-delete" onclick="hapusData('${doc.id}')">Hapus</button>
+                      </td>
+                    </tr>
+                  ` + htmlJurnal;
+                });
+              }
+
+              const kasBersih = totalPendapatanJurnal + totalModal - totalBeban - totalAset + totalUtang;
+              const surplusDefisit = totalPendapatanJurnal - totalBeban;
+              const totalAktiva = kasBersih + totalAset;
+              const totalPasiva = totalUtang + totalModal + surplusDefisit;
+              const modalAkhir = totalModal + surplusDefisit;
+
+              document.getElementById("cardSaldo").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
+              document.getElementById("cardPendapatan").innerText = "Rp " + totalPendapatanJurnal.toLocaleString("id-ID");
+              document.getElementById("cardBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+              document.getElementById("cardAset").innerText = "Rp " + totalAset.toLocaleString("id-ID");
+              document.getElementById("tabelJurnalBody").innerHTML = htmlJurnal;
+
+              let rptPendapatanHTML = "";
+              for (let k in recapPendapatan) { rptPendapatanHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapPendapatan[k].toLocaleString("id-ID")}</td></tr>`; }
+              document.getElementById("laporanPendapatan").innerHTML = rptPendapatanHTML || `<tr><td colspan="2" class="indent">-</td></tr>`;
+              document.getElementById("rptTotalPendapatan").innerText = "Rp " + totalPendapatanJurnal.toLocaleString("id-ID");
+
+              let rptBebanHTML = "";
+              for (let k in recapBeban) { rptBebanHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapBeban[k].toLocaleString("id-ID")}</td></tr>`; }
+              document.getElementById("laporanBeban").innerHTML = rptBebanHTML || `<tr><td colspan="2" class="indent">-</td></tr>`;
+              document.getElementById("rptTotalBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+              document.getElementById("rptSurplusDefisit").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+
+              document.getElementById("nrcKas").innerText = "Rp " + kasBersih.toLocaleString("id-ID");
+              let nrcAsetHTML = "";
+              for (let k in recapAset) { nrcAsetHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapAset[k].toLocaleString("id-ID")}</td></tr>`; }
+              document.getElementById("nrcTabelAset").innerHTML = nrcAsetHTML || `<tr><td colspan="2" class="indent">Tidak ada inventaris</td></tr>`;
+              document.getElementById("nrcTotalAset").innerText = "Rp " + totalAktiva.toLocaleString("id-ID");
+
+              let nrcUtangHTML = "";
+              for (let k in recapUtang) { nrcUtangHTML += `<tr><td class="indent">${k}</td><td style="text-align:right;">Rp ${recapUtang[k].toLocaleString("id-ID")}</td></tr>`; }
+              document.getElementById("nrcTabelUtang").innerHTML = nrcUtangHTML || `<tr><td colspan="2" class="indent">Tidak Ada Utang</td></tr>`;
+              document.getElementById("nrcTotalUtang").innerText = "Rp " + totalUtang.toLocaleString("id-ID");
+              document.getElementById("nrcSaldoDana").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+              document.getElementById("nrcTotalPasiva").innerText = "Rp " + totalPasiva.toLocaleString("id-ID");
+
+              document.getElementById("mdlAwal").innerText = "Rp " + totalModal.toLocaleString("id-ID");
+              document.getElementById("mdlSurplus").innerText = "Rp " + surplusDefisit.toLocaleString("id-ID");
+              document.getElementById("mdlAkhir").innerText = "Rp " + modalAkhir.toLocaleString("id-ID");
+
+              document.getElementById("cfPendapatan").innerText = "Rp " + totalPendapatanJurnal.toLocaleString("id-ID");
+              document.getElementById("cfBeban").innerText = "Rp " + totalBeban.toLocaleString("id-ID");
+              const arusOperasi = totalPendapatanJurnal - totalBeban;
+              document.getElementById("cfOperasi").innerText = "Rp " + arusOperasi.toLocaleString("id-ID");
+              document.getElementById("cfAset").innerText = "Rp " + totalAset.toLocaleString("id-ID");
+              document.getElementById("cfInvestasi").innerText = "Rp -" + totalAset.toLocaleString("id-ID");
+              document.getElementById("cfUtang").innerText = "Rp " + totalUtang.toLocaleString("id-ID");
+              document.getElementById("cfModal").innerText = "Rp " + totalModal.toLocaleString("id-ID");
+              const arusPendanaan = totalUtang + totalModal;
+              document.getElementById("cfPendanaan").innerText = "Rp " + arusPendanaan.toLocaleString("id-ID");
+              const totalArusKas = arusOperasi - totalAset + arusPendanaan;
+              document.getElementById("cfTotal").innerText = "Rp " + totalArusKas.toLocaleString("id-ID");
+
+              gambarGrafik(dataGrafik.labels, dataGrafik.pemasukan, dataGrafik.pengeluaran);
+            });
+          });
+        }
+      }, 200);
+    }
+
+    function gambarGrafik(labels, pemasukan, pengeluaran) {
+      const ctx = document.getElementById('grafikKeuangan').getContext('2d');
+      if (chartInstance) { chartInstance.destroy(); }
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            { label: 'Pemasukan (Rp)', data: pemasukan, borderColor: '#2a9d8f', backgroundColor: 'rgba(42, 157, 143, 0.1)', tension: 0.3, fill: true },
+            { label: 'Pengeluaran (Rp)', data: pengeluaran, borderColor: '#e76f51', backgroundColor: 'rgba(231, 111, 81, 0.1)', tension: 0.3, fill: true }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: { y: { beginAtZero: true, title: { display: true, text: 'Nominal (Rp)' } } }
+        }
+      });
+    }
+  </script>
+</body>
+</html>
