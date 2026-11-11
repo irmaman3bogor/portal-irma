@@ -15,13 +15,13 @@
     .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
     .btn-simpan:hover { background: #1a5c3a; }
     .btn-simpan:disabled { background: #888; cursor: not-allowed; }
-    .preview-img { max-width: 100px; margin-top: 10px; border-radius: 6px; display: none; }
+    .preview-img { max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 6px; object-fit: cover; display: none; border: 2px solid #0a3622; }
   </style>
 
   <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -33,7 +33,7 @@
     };
     const app = initializeApp(firebaseConfig);
     window.db = getFirestore(app);
-    window.fb = { collection, addDoc };
+    window.fb = { doc, setDoc };
   </script>
 </head>
 <body>
@@ -44,7 +44,7 @@
     <form id="formBiodata" onsubmit="simpanBiodata(event)">
       
       <div class="form-group">
-        <label>Foto Profil (Maks 1MB)</label>
+        <label>Foto Profil (Maks 300KB)</label>
         <input type="file" id="inFoto" accept="image/*" onchange="previewFoto(event)">
         <img id="imgPreview" class="preview-img" alt="Preview Foto">
       </div>
@@ -94,14 +94,14 @@
   </div>
 
   <script>
-    let base64Foto = ""; // Menyimpan teks foto
+    let base64Foto = ""; 
 
     function previewFoto(event) {
       const file = event.target.files[0];
       if (file) {
-        // Batasan ukuran 1MB agar Firebase tidak jebol
-        if (file.size > 1024 * 1024) {
-          alert("Ukuran foto terlalu besar! Maksimal 1MB.");
+        // Batasi maksimal 300KB agar aman dari error 400 Firestore
+        if (file.size > 300 * 1024) {
+          alert("Ukuran foto terlalu besar! Maksimal 300KB agar muat di database.");
           event.target.value = ""; 
           document.getElementById("imgPreview").style.display = "none";
           base64Foto = "";
@@ -113,7 +113,7 @@
           const img = document.getElementById("imgPreview");
           img.src = e.target.result;
           img.style.display = "block";
-          base64Foto = e.target.result; // Mengubah file gambar menjadi teks Base64
+          base64Foto = e.target.result; 
         };
         reader.readAsDataURL(file);
       }
@@ -127,7 +127,15 @@
       btn.disabled = true;
 
       try {
-        // STRUKTUR DATA 100% SAMA DENGAN SCREENSHOT FIREBASE ANDA
+        // Ambil ID User dari localStorage yang dikirim saat login
+        const userId = localStorage.getItem("irmaUserId");
+        
+        if (!userId) {
+          alert("❌ Sesi login tidak ditemukan. Silakan login ulang.");
+          window.location.href = "index.html";
+          return;
+        }
+
         const dataBiodata = {
           nama: document.getElementById("inNama").value,
           nis: document.getElementById("inNis").value,
@@ -137,19 +145,15 @@
           tanggalLahir: document.getElementById("inTanggalLahir").value,
           noHp: document.getElementById("inNoHp").value,
           alamat: document.getElementById("inAlamat").value,
-          fotoUrl: base64Foto, // Teks Base64 masuk ke sini
+          fotoUrl: base64Foto, 
           updatedAt: new Date().toISOString()
         };
 
-        // Simpan ke collection "biodata_siswa"
-        const { collection, addDoc } = window.fb;
-        await addDoc(collection(window.db, "biodata_siswa"), dataBiodata);
+        // Simpan menggunakan setDoc berdasarkan UID user agar terikat langsung
+        const { doc, setDoc } = window.fb;
+        await setDoc(doc(window.db, "biodata_siswa", userId), dataBiodata, { merge: true });
 
-        alert("✅ Biodata berhasil disimpan ke database!");
-        
-        document.getElementById("formBiodata").reset();
-        document.getElementById("imgPreview").style.display = "none";
-        base64Foto = "";
+        alert("✅ Biodata berhasil disimpan!");
 
       } catch (error) {
         console.error(error);
