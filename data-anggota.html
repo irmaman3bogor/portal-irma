@@ -32,20 +32,39 @@
     .card-table { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-x: auto; }
     .card-table h2 { color: #0a3622; margin-bottom: 20px; border-bottom: 2px solid #d4af37; display: inline-block; padding-bottom: 5px; }
     
-    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 700px; }
-    th, td { padding: 12px 15px; text-align: left; border: 1px solid #ddd; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 900px; }
+    th, td { padding: 10px 12px; text-align: left; border: 1px solid #ddd; vertical-align: middle; }
     th { background: #0a3622; color: white; font-weight: 600; }
     tr:nth-child(even) { background-color: #f9f9f9; }
     tr:hover { background-color: #f1f1f1; }
     
     /* Tombol Aksi */
-    .btn-action { padding: 6px 12px; border-radius: 4px; border: none; color: white; font-size: 12px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 5px; }
+    .btn-action { padding: 5px 10px; border-radius: 4px; border: none; color: white; font-size: 11px; cursor: pointer; font-weight: bold; text-decoration: none; display: inline-block; margin-right: 3px; margin-bottom: 3px; }
     .btn-view { background: #3498db; }
+    .btn-view:hover { background: #2980b9; }
+    .btn-cetak { background: #f39c12; }
+    .btn-cetak:hover { background: #d68910; }
     .btn-hapus { background: #e74c3c; }
+    .btn-hapus:hover { background: #c0392b; }
+
+    /* Badge Jabatan */
+    .badge-jabatan { background: #eaf2ed; color: #0a3622; padding: 3px 6px; border-radius: 4px; font-weight: bold; font-size: 11px; display: inline-block; }
 
     /* --- TOMBOL KEMBALI --- */
     .btn-kembali { background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
     .btn-kembali:hover { background: #5a6268; }
+
+    /* --- MODAL VIEW / EDIT --- */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 10px; width: 90%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; padding-bottom: 10px; margin-bottom: 15px; }
+    .modal-header h3 { color: #0a3622; }
+    .close-btn { background: none; border: none; font-size: 20px; cursor: pointer; color: #888; }
+    .form-group { margin-bottom: 12px; display: flex; flex-direction: column; }
+    .form-group label { font-size: 12px; font-weight: bold; color: #0a3622; margin-bottom: 4px; }
+    .form-group input, .form-group select { padding: 8px; border: 1px solid #ccc; border-radius: 4px; font-size: 13px; }
+    .btn-simpan-modal { background: #0a3622; color: white; border: none; padding: 10px; border-radius: 5px; font-weight: bold; width: 100%; cursor: pointer; margin-top: 10px; }
+    .btn-simpan-modal:hover { background: #1a5c3a; }
 
     /* --- RESPONSIF HP --- */
     @media (max-width: 768px) {
@@ -60,7 +79,7 @@
   <!-- SCRIPT FIREBASE UNTUK DATA ANGGOTA -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -73,49 +92,98 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Fungsi untuk memuat data secara otomatis
     const tabelBody = document.getElementById("tabelBody");
-    const q = collection(db, "anggota_irma"); // Pastikan nama collection di Firebase Anda adalah "anggota_irma"
+    const q = collection(db, "biodata_siswa"); // Mengambil dari koleksi biodata_siswa
 
     onSnapshot(q, (snapshot) => {
-      tabelBody.innerHTML = ""; // Kosongkan tabel sebelum diisi
+      tabelBody.innerHTML = ""; 
       let no = 1;
 
       if(snapshot.empty) {
-        tabelBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data anggota.</td></tr>`;
+        tabelBody.innerHTML = `<tr><td colspan="9" style="text-align:center;">Belum ada data anggota.</td></tr>`;
         return;
       }
 
       snapshot.forEach((docSnap) => {
         const data = docSnap.data();
-        
-        // Jika foto tidak ada, pakai placeholder
-        const fotoUrl = data.foto ? data.foto : "https://via.placeholder.com/40";
+        const fotoUrl = data.fotoUrl ? data.fotoUrl : "https://via.placeholder.com/40";
 
         const tr = document.createElement("tr");
         tr.innerHTML = `
-          <td>${no++}</td>
-          <td><img src="${fotoUrl}" style="border-radius:50%; width:40px; height:40px; object-fit:cover;"></td>
-          <td><strong>${data.nama || '-'}</strong></td>
+          <td style="text-align:center;">${no++}</td>
+          <td style="text-align:center;"><img src="${fotoUrl}" style="border-radius:50%; width:35px; height:35px; object-fit:cover; border:1px solid #0a3622;"></td>
+          <td><strong>${data.noId || '-'}</strong></td>
+          <td>${data.nama || '-'}</td>
+          <td><span class="badge-jabatan">${data.jabatan || '-'}</span></td>
           <td>${data.nis || '-'}</td>
-          <td>${data.kelas || '-'}</td>
-          <td>
-            <a href="#" class="btn-action btn-view">View</a>
-            <button class="btn-action btn-hapus" onclick="hapusAnggota('${docSnap.id}', '${data.nama}')">Hapus</button>
+          <td>${data.kelas ? data.kelas + ' / ' + (data.jurusan || '-') : '-'}</td>
+          <td>${data.noHp || '-'}</td>
+          <td style="text-align:center;">
+            <button class="btn-action btn-view" onclick="bukaModalEdit('${docSnap.id}', '${encodeURIComponent(JSON.stringify(data))}')">👁️ View/Edit</button>
+            <button class="btn-action btn-cetak" onclick="cetakAnggota('${docSnap.id}')">🖨️ Cetak</button>
+            <button class="btn-action btn-hapus" onclick="hapusAnggota('${docSnap.id}', '${data.nama}')">🗑️ Hapus</button>
           </td>
         `;
         tabelBody.appendChild(tr);
       });
     });
 
+    // Fungsi Buka Modal View / Edit
+    window.bukaModalEdit = function(id, encodedData) {
+      const data = JSON.parse(decodeURIComponent(encodedData));
+      
+      document.getElementById("editId").value = id;
+      document.getElementById("editNama").value = data.nama || "";
+      document.getElementById("editNoId").value = data.noId || "";
+      document.getElementById("editJabatan").value = data.jabatan || "";
+      document.getElementById("editNis").value = data.nis || "";
+      document.getElementById("editNoHp").value = data.noHp || "";
+
+      document.getElementById("modalEdit").style.display = "flex";
+    }
+
+    // Fungsi Tutup Modal
+    window.tutupModal = function() {
+      document.getElementById("modalEdit").style.display = "none";
+    }
+
+    // Fungsi Simpan Perubahan dari Modal
+    window.simpanPerubahan = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById("editId").value;
+      
+      const updateData = {
+        nama: document.getElementById("editNama").value,
+        noId: document.getElementById("editNoId").value,
+        jabatan: document.getElementById("editJabatan").value,
+        nis: document.getElementById("editNis").value,
+        noHp: document.getElementById("editNoHp").value,
+        updatedAt: new Date().toISOString()
+      };
+
+      try {
+        await updateDoc(doc(db, "biodata_siswa", id), updateData);
+        alert("✅ Data berhasil diperbarui!");
+        tutupModal();
+      } catch (error) {
+        alert("❌ Gagal memperbarui data: " + error.message);
+      }
+    }
+
+    // Fungsi Cetak Data
+    window.cetakAnggota = function(id) {
+      alert("Fitur cetak kartu/data untuk ID: " + id);
+      window.print();
+    }
+
     // Fungsi Hapus Data
     window.hapusAnggota = async function(id, nama) {
       if(confirm(`Yakin ingin menghapus data "${nama}"?`)) {
         try {
-          await deleteDoc(doc(db, "anggota_irma", id));
-          alert("Data berhasil dihapus!");
+          await deleteDoc(doc(db, "biodata_siswa", id));
+          alert("✅ Data berhasil dihapus!");
         } catch (error) {
-          alert("Gagal menghapus data: " + error.message);
+          alert("❌ Gagal menghapus data: " + error.message);
         }
       }
     }
@@ -162,26 +230,68 @@
     <!-- ISI KONTEN (Tabel) -->
     <div class="content-body">
       <div class="card-table">
-        <h2>📋 Daftar Anggota IRMA</h2>
+        <h2>📋 Daftar Anggota & Pengurus IRMA</h2>
         <table>
           <thead>
             <tr>
-              <th>No</th>
-              <th>Foto</th>
+              <th style="width: 40px; text-align:center;">No</th>
+              <th style="width: 60px; text-align:center;">Foto</th>
+              <th>No ID</th>
               <th>Nama Lengkap</th>
+              <th>Jabatan</th>
               <th>NIS</th>
               <th>Kelas / Jurusan</th>
-              <th>Aksi</th>
+              <th>No HP</th>
+              <th style="text-align:center; width: 190px;">Aksi</th>
             </tr>
           </thead>
           <tbody id="tabelBody">
-            <!-- Data akan diisi otomatis oleh Firebase -->
-            <tr><td colspan="6" style="text-align:center;">Memuat data dari database...</td></tr>
+            <tr><td colspan="9" style="text-align:center;">Memuat data dari database...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
+  </div>
+
+  <!-- MODAL POPUP VIEW / EDIT -->
+  <div id="modalEdit" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>👁️ View & Edit Data Anggota</h3>
+        <button class="close-btn" onclick="tutupModal()">&times;</button>
+      </div>
+      <form onsubmit="simpanPerubahan(event)">
+        <input type="hidden" id="editId">
+        
+        <div class="form-group">
+          <label>No ID</label>
+          <input type="text" id="editNoId" required>
+        </div>
+
+        <div class="form-group">
+          <label>Nama Lengkap</label>
+          <input type="text" id="editNama" required>
+        </div>
+
+        <div class="form-group">
+          <label>Jabatan</label>
+          <input type="text" id="editJabatan" required>
+        </div>
+
+        <div class="form-group">
+          <label>NIS</label>
+          <input type="text" id="editNis">
+        </div>
+
+        <div class="form-group">
+          <label>No HP / WhatsApp</label>
+          <input type="text" id="editNoHp">
+        </div>
+
+        <button type="submit" class="btn-simpan-modal">Simpan Perubahan</button>
+      </form>
+    </div>
   </div>
 
   <!-- Script Proteksi & Sidebar -->
