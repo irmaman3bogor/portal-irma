@@ -5,189 +5,162 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Data Anggota - Portal IRMA</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; margin: 0; }
-    .card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    h3 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f6f9; display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR --- */
+    .sidebar { width: 260px; background-color: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
+    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header img { width: 60px; margin-bottom: 10px; }
+    .sidebar-header h2 { color: #d4af37; font-size: 18px; margin-bottom: 5px; }
+    .sidebar-header p { font-size: 11px; color: #ccc; }
+    .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
+    .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; border-left: 4px solid transparent; }
+    .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255,255,255,0.05); border-left-color: #d4af37; color: #d4af37; }
+    .sidebar-menu a span { margin-right: 15px; font-size: 16px; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+    .top-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+    .top-header h1 { font-size: 20px; color: #0a3622; }
+    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; }
+    .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
+
+    /* --- KONTEN TABEL (Dari Screenshot Anda) --- */
+    .content-body { padding: 30px; flex: 1; }
+    .card-table { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-x: auto; }
+    .card-table h2 { color: #0a3622; margin-bottom: 20px; border-bottom: 2px solid #d4af37; display: inline-block; padding-bottom: 5px; }
     
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #e5e7eb; padding: 12px; text-align: left; vertical-align: middle; }
-    th { background: #0a3622; color: white; text-align: center; }
+    table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 700px; }
+    th, td { padding: 12px 15px; text-align: left; border: 1px solid #ddd; }
+    th { background: #0a3622; color: white; font-weight: 600; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    tr:hover { background-color: #f1f1f1; }
     
-    .foto-tabel { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; border: 2px solid #d4af37; display: block; margin: 0 auto; }
-    
-    .btn-action { padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; border: none; color: white; margin-right: 5px; }
+    /* Tombol Aksi */
+    .btn-action { padding: 6px 12px; border-radius: 4px; border: none; color: white; font-size: 12px; cursor: pointer; text-decoration: none; display: inline-block; margin-right: 5px; }
     .btn-view { background: #3498db; }
     .btn-hapus { background: #e74c3c; }
-    
-    .loading { text-align: center; color: #666; font-style: italic; padding: 20px; }
 
-    /* Modal untuk detail biodata */
-    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); overflow: auto; }
-    .modal-content { background: white; margin: 30px auto; padding: 30px; border-radius: 12px; max-width: 650px; position: relative; box-shadow: 0 4px 20px rgba(0,0,0,0.2); }
-    .close { position: absolute; top: 10px; right: 20px; font-size: 28px; font-weight: bold; cursor: pointer; color: #333; }
-    .modal-content h2 { color: #0a3622; text-align: center; margin-top: 0; }
-    
-    .modal-profil-container { display: flex; gap: 20px; align-items: flex-start; }
-    .modal-foto { width: 120px; height: 160px; object-fit: cover; border-radius: 8px; border: 3px solid #d4af37; }
-    .modal-data { flex: 1; }
-    
-    .modal-data .form-group { margin-bottom: 8px; }
-    .modal-data label { font-weight: bold; font-size: 12px; color: #0a3622; display: block; }
-    .modal-data input, .modal-data textarea { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; background: #f9f9f9; font-size: 13px; }
+    /* --- TOMBOL KEMBALI --- */
+    .btn-kembali { background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
+    .btn-kembali:hover { background: #5a6268; }
+
+    /* --- RESPONSIF HP --- */
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: -260px; height: 100vh; }
+      .sidebar.open { left: 0; }
+      .menu-toggle { display: block; }
+      .top-header { padding: 15px 20px; }
+      .content-body { padding: 15px; }
+    }
   </style>
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, deleteDoc, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
-      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
-      projectId: "portal-irma-man-3-bogor",
-      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
-      messagingSenderId: "582215464487",
-      appId: "1:582215464487:web:4d0583016ebec700dec002"
-    };
-    const app = initializeApp(firebaseConfig);
-    window.db = getFirestore(app);
-    window.fb = { collection, getDocs, deleteDoc, doc, getDoc };
-  </script>
 </head>
 <body>
 
-  <div class="card">
-    <h3>📋 Daftar Anggota IRMA</h3>
-    <div style="overflow-x: auto;">
-      <table>
-        <thead>
-          <tr>
-            <th style="width: 50px;">No</th>
-            <th style="width: 70px;">Foto</th>
-            <th>Nama Lengkap</th>
-            <th>NIS</th>
-            <th>Kelas / Jurusan</th>
-            <th style="width: 150px;">Aksi</th>
-          </tr>
-        </thead>
-        <tbody id="tabelAnggota">
-          <tr><td colspan="6" class="loading">Memuat data dari Firebase...</td></tr>
-        </tbody>
-      </table>
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="logo.png" alt="Logo IRMA">
+      <h2>PORTAL IRMA</h2>
+      <p>MAN 3 BOGOR</p>
+    </div>
+    <div class="sidebar-menu">
+      <a href="beranda.html"><span>🏠</span> Home</a>
+      <a href="profil.html"><span>📖</span> Profil IRMA</a>
+      <a href="informasi.html"><span>📢</span> Informasi</a>
+      <a href="keuangan.html"><span>💰</span> Keuangan</a>
+      <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
+      <!-- Menu Data Anggota di-set active -->
+      <a href="data-anggota.html" class="active"><span>👥</span> Data Anggota</a>
+      <a href="kegiatan.html"><span>📅</span> Kegiatan</a>
+      <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
+      <a href="akuntansi.html"><span>📊</span> Sistem Akuntansi IRMA</a> 
+      <a href="daftar-anggota.html"><span>📋</span> Daftar Anggota IRMA</a>
     </div>
   </div>
 
-  <!-- MODAL DETAIL BIODATA -->
-  <div id="modalDetail" class="modal">
-    <div class="modal-content">
-      <span class="close" onclick="tutupModal()">&times;</span>
-      <h2>Detail Biodata Siswa</h2>
-      
-      <div class="modal-profil-container">
-        <img id="modalFoto" src="" class="modal-foto" alt="Foto Profil">
-        
-        <div class="modal-data">
-          <div class="form-group"><label>No. ID Anggota</label><input type="text" id="modalNoId" readonly></div>
-          <div class="form-group"><label>Jabatan</label><input type="text" id="modalJabatan" readonly></div>
-          <div class="form-group"><label>Nama Lengkap</label><input type="text" id="modalNama" readonly></div>
-          <div class="form-group"><label>NIS</label><input type="text" id="modalNis" readonly></div>
-          <div class="form-group"><label>Kelas / Jurusan</label><input type="text" id="modalKelas" readonly></div>
-          <div class="form-group"><label>Tempat, Tanggal Lahir</label><input type="text" id="modalTtl" readonly></div>
-          <div class="form-group"><label>No. HP Siswa</label><input type="text" id="modalNoHp" readonly></div>
-          <div class="form-group"><label>Nama Orang Tua</label><input type="text" id="modalNamaOrtu" readonly></div>
-          <div class="form-group"><label>No. HP Orang Tua</label><input type="text" id="modalHpOrtu" readonly></div>
-          <div class="form-group"><label>Alamat</label><textarea id="modalAlamat" rows="2" readonly></textarea></div>
-        </div>
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    
+    <!-- HEADER -->
+    <div class="top-header">
+      <div style="display: flex; align-items: center;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1>Data Anggota</h1>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <!-- TOMBOL KEMBALI -->
+        <a href="beranda.html" class="btn-kembali">⬅️ Kembali</a>
+        <button onclick="logout()" class="btn-logout">Keluar</button>
       </div>
     </div>
+
+    <!-- ISI KONTEN (Tabel dari screenshot) -->
+    <div class="content-body">
+      <div class="card-table">
+        <h2>📋 Daftar Anggota IRMA</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Foto</th>
+              <th>Nama Lengkap</th>
+              <th>NIS</th>
+              <th>Kelas / Jurusan</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- CATATAN: Baris di bawah ini adalah contoh statis. 
+                 Jika Anda menggunakan Firebase/JS untuk memuat data, hapus baris TR ini 
+                 dan biarkan JavaScript Anda yang mengisi tabelnya. -->
+            <tr>
+              <td>1</td>
+              <td><img src="https://via.placeholder.com/40" style="border-radius:50%; width:40px; height:40px;"></td>
+              <td><strong>AKU</strong></td>
+              <td>86896</td>
+              <td>10 - IPS</td>
+              <td>
+                <a href="#" class="btn-action btn-view">View</a>
+                <button class="btn-action btn-hapus">Hapus</button>
+              </td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><img src="https://via.placeholder.com/40" style="border-radius:50%; width:40px; height:40px;"></td>
+              <td><strong>ADI FIRMANSYAH</strong></td>
+              <td>80988798879798</td>
+              <td>10 - IPS</td>
+              <td>
+                <a href="#" class="btn-action btn-view">View</a>
+                <button class="btn-action btn-hapus">Hapus</button>
+              </td>
+            </tr>
+            <!-- Tambahkan baris data lainnya di sini atau biarkan JS yang mengisinya -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
   </div>
 
   <script>
-    async function muatData() {
-      const tbody = document.getElementById("tabelAnggota");
-      tbody.innerHTML = '<tr><td colspan="6" class="loading">Memuat data...</td></tr>';
-
-      try {
-        const { collection, getDocs } = window.fb;
-        const querySnapshot = await getDocs(collection(window.db, "AnggotaIRMA"));
-        
-        if (querySnapshot.empty) {
-          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">Belum ada data anggota.</td></tr>';
-          return;
-        }
-
-        let html = "";
-        let no = 1;
-        querySnapshot.forEach((docSnap) => {
-          const d = docSnap.data();
-          
-          const fotoSrc = d.fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.nama)}&background=0a3622&color=fff&size=50`;
-          
-          html += `
-            <tr>
-              <td style="text-align:center;">${no++}</td>
-              <td><img src="${fotoSrc}" class="foto-tabel"></td>
-              <td><b>${d.nama}</b></td>
-              <td>${d.nis}</td>
-              <td>${d.kelas} - ${d.jurusan}</td>
-              <td style="text-align:center;">
-                <button class="btn-action btn-view" onclick="lihatDetail('${docSnap.id}')">View</button>
-                <button class="btn-action btn-hapus" onclick="hapusData('${docSnap.id}', '${d.nama}')">Hapus</button>
-              </td>
-            </tr>
-          `;
-        });
-        tbody.innerHTML = html;
-
-      } catch (error) {
-        console.error(error);
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; color:red;">Gagal memuat data.</td></tr>';
+    // Proteksi Login
+    if (localStorage.getItem("irmaLogin") !== "true") {
+      window.location.href = "index.html";
+    }
+    function logout() {
+      if (confirm("Yakin ingin keluar dari Portal IRMA?")) {
+        localStorage.removeItem("irmaLogin");
+        localStorage.removeItem("userLoginData");
+        window.location.href = "index.html";
       }
     }
-
-    window.lihatDetail = async function(id) {
-      try {
-        const { doc, getDoc } = window.fb;
-        const docSnap = await getDoc(doc(window.db, "AnggotaIRMA", id));
-        if (docSnap.exists()) {
-          const d = docSnap.data();
-          
-          document.getElementById("modalFoto").src = d.fotoUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(d.nama)}&background=0a3622&color=fff&size=120`;
-          document.getElementById("modalNoId").value = d.noId || "-";
-          document.getElementById("modalJabatan").value = d.jabatan || "-";
-          document.getElementById("modalNama").value = d.nama || "-";
-          document.getElementById("modalNis").value = d.nis || "-";
-          document.getElementById("modalKelas").value = (d.kelas || "-") + " / " + (d.jurusan || "-");
-          document.getElementById("modalTtl").value = (d.tempatLahir || "-") + ", " + (d.tanggalLahir || "-");
-          document.getElementById("modalNoHp").value = d.noHp || "-";
-          document.getElementById("modalNamaOrtu").value = d.namaOrtu || "-";
-          document.getElementById("modalHpOrtu").value = d.noHpOrtu || "-";
-          document.getElementById("modalAlamat").value = d.alamat || "-";
-          
-          document.getElementById("modalDetail").style.display = "block";
-        }
-      } catch (error) {
-        console.error(error);
-        alert("Gagal memuat detail biodata.");
-      }
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
     }
-
-    window.tutupModal = function() {
-      document.getElementById("modalDetail").style.display = "none";
-    }
-
-    window.hapusData = async function(id, nama) {
-      if (!confirm(`Yakin ingin menghapus data "${nama}"?`)) return;
-      try {
-        const { doc, deleteDoc } = window.fb;
-        await deleteDoc(doc(window.db, "AnggotaIRMA", id));
-        alert("🗑️ Data berhasil dihapus!");
-        muatData();
-      } catch (error) {
-        console.error(error);
-        alert("❌ Gagal menghapus data.");
-      }
-    }
-
-    window.onload = muatData;
   </script>
 </body>
 </html>
