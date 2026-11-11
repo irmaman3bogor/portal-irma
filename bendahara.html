@@ -95,7 +95,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -108,10 +108,9 @@
 
     const app = initializeApp(firebaseConfig);
     window.db = getFirestore(app);
-    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc };
+    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs };
     
     muatDataKas();
-    muatDataSiswaIuran();
   </script>
 </head>
 <body>
@@ -448,15 +447,19 @@
       }
     }
 
-    // FUNGSI UNTUK MEMUAT DATA SISWA & REKAP IURAN OTOMATIS KE KAS
+    // FUNGSI MEMUAT DATA SISWA & REKAP IURAN DARI KOLEKSI biodata_siswa ATAU AnggotaIRMA
     async function muatDataSiswaIuran(totalIuranCallback) {
       const checkReady = setInterval(async () => {
         if (window.db && window.fbTools) {
           clearInterval(checkReady);
-          const { collection, getDocs } = window.fbTools;
+          const { collection, getDocs, getDoc, doc } = window.fbTools;
           
           try {
-            const siswaSnap = await getDocs(collection(window.db, "biodata_siswa"));
+            let siswaSnap = await getDocs(collection(window.db, "biodata_siswa"));
+            if (siswaSnap.empty) {
+              siswaSnap = await getDocs(collection(window.db, "AnggotaIRMA"));
+            }
+
             const tbody10 = document.getElementById("tabelKelas10Body");
             const tbody11 = document.getElementById("tabelKelas11Body");
             
@@ -466,22 +469,34 @@
             let no10 = 1, no11 = 1;
             let totalNominalIuranSiswa = 0;
 
+            if (siswaSnap.empty) {
+              tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              if (typeof totalIuranCallback === 'function') totalIuranCallback(0);
+              return;
+            }
+
             for (const docSiswa of siswaSnap.docs) {
               const siswa = docSiswa.data();
               const siswaId = docSiswa.id;
-              const kelasStr = (siswa.kelas || "").trim().toUpperCase();
+              
+              // Cek berbagai variasi penulisan field nama dan kelas
+              const namaSiswa = siswa.nama || siswa["Nama Lengkap"] || siswa.namaLengkap || siswa.fullName || "-";
+              const kelasSiswa = siswa.kelas || siswa.Kelas || siswa.rombel || "-";
+              const nisnSiswa = siswa.nisn || siswa.NISN || siswa.nis || siswa.noId || "-";
+              const kelasStr = String(kelasSiswa).trim().toUpperCase();
 
               // Ambil data iuran siswa
-              const iuranSnap = await window.fbTools.getDoc(window.fbTools.doc(window.db, "iuran_bulanan", siswaId));
+              const iuranSnap = await getDoc(doc(window.db, "iuran_bulanan", siswaId));
               const iuranData = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
               const statusBulan = iuranData.bulan || {};
 
               let tr = document.createElement("tr");
               let htmlTD = `
                 <td class="text-center">__NO__</td>
-                <td class="text-center"><strong>${siswa.nisn || siswa.nis || '-'}</strong></td>
-                <td>${siswa.nama || '-'}</td>
-                <td class="text-center">${siswa.kelas || '-'}</td>
+                <td class="text-center"><strong>${nisnSiswa}</strong></td>
+                <td>${namaSiswa}</td>
+                <td class="text-center">${kelasSiswa}</td>
               `;
 
               daftarBulan.forEach(bulan => {
@@ -546,7 +561,6 @@
             let htmlJurnal = "";
             let dataGrafik = { labels: [], pemasukan: [], pengeluaran: [] };
 
-            // Muat ulang data iuran siswa dan ambil total nominalnya untuk digabung ke Pendapatan
             muatDataSiswaIuran((totalIuranSiswa) => {
               totalPendapatanJurnal += totalIuranSiswa;
               if (totalIuranSiswa > 0) {
