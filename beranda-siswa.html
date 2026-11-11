@@ -81,11 +81,7 @@
       <li class="menu-item active" onclick="bukaMenu('home', this)"><i>🏠</i> Home</li>
       <li class="menu-item" onclick="bukaMenu('profil-siswa', this)"><i>📖</i> Visi Misi IRMA</li>
       <li class="menu-item" onclick="bukaMenu('entri-biodata', this)"><i>📝</i> Entri Biodata</li>
-      
-      <!-- MENU KARTU ANGGOTA DITAMBAHKAN DI SINI -->
       <li class="menu-item" onclick="bukaMenu('kartu-anggota', this)"><i>🪪</i> Kartu Anggota</li>
-      <!-- -------------------------------------- -->
-
       <li class="menu-item" onclick="bukaMenu('ubah-password', this)"><i>🔒</i> Ubah Password</li>
       <li class="menu-item" onclick="bukaMenu('program-kerja', this)"><i>📝</i> Program Kerja</li>
       <li class="menu-item" onclick="bukaMenu('informasi', this)"><i>📢</i> Informasi</li>
@@ -152,8 +148,7 @@
     // CEK LOGIN & SIMPAN ID USER
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        // Simpan UID ke localStorage agar bisa diakses halaman lain
-        localStorage.setItem("irmaUserId", user.uid); 
+        localStorage.setItem("irmaUserId", user.uid);  
       } else {
         if (localStorage.getItem("irmaLogin") !== "true") {
            window.location.href = "index.html";
