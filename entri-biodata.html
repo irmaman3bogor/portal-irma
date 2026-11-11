@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Entri Biodata - Portal IRMA</title>
   <style>
-    /* CSS Polos, tanpa sidebar */
+    /* CSS Polos untuk dalam Iframe */
     body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
     .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
@@ -15,6 +15,9 @@
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
     .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
     .btn-simpan:hover { background: #1a5c3a; }
+    
+    /* Style untuk preview foto */
+    .preview-img { max-width: 100px; margin-top: 10px; border-radius: 6px; display: none; }
   </style>
 </head>
 <body>
@@ -23,43 +26,88 @@
     <h2>📝 Entri Biodata Siswa</h2>
     
     <form id="formBiodata" onsubmit="simpanBiodata(event)">
+      
+      <!-- FOTO PROFIL -->
+      <div class="form-group">
+        <label>Foto Profil</label>
+        <input type="file" id="inFoto" accept="image/*" onchange="previewFoto(event)">
+        <img id="imgPreview" class="preview-img" alt="Preview Foto">
+      </div>
+
+      <!-- NO ID -->
+      <div class="form-group">
+        <label>No ID</label>
+        <input type="text" id="inNoId" placeholder="Masukkan No ID Anggota">
+      </div>
+
+      <!-- NAMA LENGKAP -->
       <div class="form-group">
         <label>Nama Lengkap</label>
         <input type="text" id="inNama" placeholder="Masukkan nama lengkap" required>
       </div>
-      
+
+      <!-- JABATAN -->
       <div class="form-group">
-        <label>NIS</label>
-        <input type="text" id="inNis" placeholder="Masukkan NIS" required>
+        <label>Jabatan</label>
+        <input type="text" id="inJabatan" placeholder="Contoh: Ketua, Sekretaris, Anggota">
       </div>
-      
+
+      <!-- ALAMAT -->
       <div class="form-group">
-        <label>Kelas / Jurusan</label>
-        <select id="inKelas" required>
-          <option value="">-- Pilih Kelas --</option>
-          <option value="10 - IPS">10 - IPS</option>
-          <option value="10 - Keagamaan">10 - Keagamaan</option>
-          <option value="11 - IPS">11 - IPS</option>
-          <option value="11 - Keagamaan">11 - Keagamaan</option>
-          <option value="12 - IPS">12 - IPS</option>
-          <option value="12 - Keagamaan">12 - Keagamaan</option>
-        </select>
+        <label>Alamat</label>
+        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
       </div>
-      
+
+      <!-- NO HP -->
       <div class="form-group">
-        <label>Nomor WhatsApp (Opsional)</label>
-        <input type="tel" id="inWa" placeholder="Contoh: 08123456789">
+        <label>No HP</label>
+        <input type="tel" id="inNoHp" placeholder="Contoh: 08123456789">
       </div>
-      
+
+      <!-- NAMA ORANG TUA -->
+      <div class="form-group">
+        <label>Nama Orang Tua</label>
+        <input type="text" id="inNamaOrtu" placeholder="Masukkan nama orang tua">
+      </div>
+
+      <!-- NOMOR HP ORANG TUA -->
+      <div class="form-group">
+        <label>Nomor HP Orang Tua</label>
+        <input type="tel" id="inHpOrtu" placeholder="Contoh: 08123456789">
+      </div>
+
       <button type="submit" class="btn-simpan">Simpan Biodata</button>
     </form>
   </div>
 
   <script>
+    // Fungsi Preview Foto
+    function previewFoto(event) {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = document.getElementById("imgPreview");
+          img.src = e.target.result;
+          img.style.display = "block";
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    // Fungsi Simpan (Sesuaikan dengan Firebase Anda)
     function simpanBiodata(e) {
       e.preventDefault();
-      alert("Biodata berhasil disimpan!");
+      
+      const nama = document.getElementById("inNama").value;
+      const noId = document.getElementById("inNoId").value;
+      
+      // Tampilkan pesan sukses sementara
+      alert("Biodata " + nama + " berhasil disimpan!");
+      
+      // Reset form
       document.getElementById("formBiodata").reset();
+      document.getElementById("imgPreview").style.display = "none";
     }
   </script>
 </body>
