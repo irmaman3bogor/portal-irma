@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Entri Biodata - Portal IRMA</title>
   <style>
-    /* CSS Polos untuk dalam Iframe */
     body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
     .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
@@ -15,10 +14,27 @@
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
     .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
     .btn-simpan:hover { background: #1a5c3a; }
-    
-    /* Style untuk preview foto */
+    .btn-simpan:disabled { background: #888; cursor: not-allowed; }
     .preview-img { max-width: 100px; margin-top: 10px; border-radius: 6px; display: none; }
   </style>
+
+  <!-- SCRIPT FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.fb = { collection, addDoc };
+  </script>
 </head>
 <body>
 
@@ -27,87 +43,121 @@
     
     <form id="formBiodata" onsubmit="simpanBiodata(event)">
       
-      <!-- FOTO PROFIL -->
       <div class="form-group">
-        <label>Foto Profil</label>
+        <label>Foto Profil (Maks 1MB)</label>
         <input type="file" id="inFoto" accept="image/*" onchange="previewFoto(event)">
         <img id="imgPreview" class="preview-img" alt="Preview Foto">
       </div>
 
-      <!-- NO ID -->
-      <div class="form-group">
-        <label>No ID</label>
-        <input type="text" id="inNoId" placeholder="Masukkan No ID Anggota">
-      </div>
-
-      <!-- NAMA LENGKAP -->
       <div class="form-group">
         <label>Nama Lengkap</label>
         <input type="text" id="inNama" placeholder="Masukkan nama lengkap" required>
       </div>
 
-      <!-- JABATAN -->
       <div class="form-group">
-        <label>Jabatan</label>
-        <input type="text" id="inJabatan" placeholder="Contoh: Ketua, Sekretaris, Anggota">
+        <label>NIS</label>
+        <input type="text" id="inNis" placeholder="Masukkan NIS" required>
       </div>
 
-      <!-- ALAMAT -->
       <div class="form-group">
-        <label>Alamat</label>
-        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
+        <label>Kelas</label>
+        <input type="text" id="inKelas" placeholder="Contoh: 10">
       </div>
 
-      <!-- NO HP -->
+      <div class="form-group">
+        <label>Jurusan</label>
+        <input type="text" id="inJurusan" placeholder="Contoh: IPS">
+      </div>
+
+      <div class="form-group">
+        <label>Tempat Lahir</label>
+        <input type="text" id="inTempatLahir" placeholder="Contoh: BOGOR">
+      </div>
+
+      <div class="form-group">
+        <label>Tanggal Lahir</label>
+        <input type="date" id="inTanggalLahir">
+      </div>
+
       <div class="form-group">
         <label>No HP</label>
         <input type="tel" id="inNoHp" placeholder="Contoh: 08123456789">
       </div>
 
-      <!-- NAMA ORANG TUA -->
       <div class="form-group">
-        <label>Nama Orang Tua</label>
-        <input type="text" id="inNamaOrtu" placeholder="Masukkan nama orang tua">
+        <label>Alamat</label>
+        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
       </div>
 
-      <!-- NOMOR HP ORANG TUA -->
-      <div class="form-group">
-        <label>Nomor HP Orang Tua</label>
-        <input type="tel" id="inHpOrtu" placeholder="Contoh: 08123456789">
-      </div>
-
-      <button type="submit" class="btn-simpan">Simpan Biodata</button>
+      <button type="submit" class="btn-simpan" id="btnSimpan">Simpan Biodata</button>
     </form>
   </div>
 
   <script>
-    // Fungsi Preview Foto
+    let base64Foto = ""; // Menyimpan teks foto
+
     function previewFoto(event) {
       const file = event.target.files[0];
       if (file) {
+        // Batasan ukuran 1MB agar Firebase tidak jebol
+        if (file.size > 1024 * 1024) {
+          alert("Ukuran foto terlalu besar! Maksimal 1MB.");
+          event.target.value = ""; 
+          document.getElementById("imgPreview").style.display = "none";
+          base64Foto = "";
+          return;
+        }
+
         const reader = new FileReader();
         reader.onload = function(e) {
           const img = document.getElementById("imgPreview");
           img.src = e.target.result;
           img.style.display = "block";
+          base64Foto = e.target.result; // Mengubah file gambar menjadi teks Base64
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // Fungsi Simpan (Sesuaikan dengan Firebase Anda)
-    function simpanBiodata(e) {
+    window.simpanBiodata = async function(e) {
       e.preventDefault();
+      const btn = document.getElementById("btnSimpan");
       
-      const nama = document.getElementById("inNama").value;
-      const noId = document.getElementById("inNoId").value;
-      
-      // Tampilkan pesan sukses sementara
-      alert("Biodata " + nama + " berhasil disimpan!");
-      
-      // Reset form
-      document.getElementById("formBiodata").reset();
-      document.getElementById("imgPreview").style.display = "none";
+      btn.textContent = "⏳ Menyimpan data...";
+      btn.disabled = true;
+
+      try {
+        // STRUKTUR DATA 100% SAMA DENGAN SCREENSHOT FIREBASE ANDA
+        const dataBiodata = {
+          nama: document.getElementById("inNama").value,
+          nis: document.getElementById("inNis").value,
+          kelas: document.getElementById("inKelas").value,
+          jurusan: document.getElementById("inJurusan").value,
+          tempatLahir: document.getElementById("inTempatLahir").value,
+          tanggalLahir: document.getElementById("inTanggalLahir").value,
+          noHp: document.getElementById("inNoHp").value,
+          alamat: document.getElementById("inAlamat").value,
+          fotoUrl: base64Foto, // Teks Base64 masuk ke sini
+          updatedAt: new Date().toISOString()
+        };
+
+        // Simpan ke collection "biodata_siswa"
+        const { collection, addDoc } = window.fb;
+        await addDoc(collection(window.db, "biodata_siswa"), dataBiodata);
+
+        alert("✅ Biodata berhasil disimpan ke database!");
+        
+        document.getElementById("formBiodata").reset();
+        document.getElementById("imgPreview").style.display = "none";
+        base64Foto = "";
+
+      } catch (error) {
+        console.error(error);
+        alert("❌ Gagal menyimpan data: " + error.message);
+      } finally {
+        btn.textContent = "Simpan Biodata";
+        btn.disabled = false;
+      }
     }
   </script>
 </body>
