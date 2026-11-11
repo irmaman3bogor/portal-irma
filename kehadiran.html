@@ -19,7 +19,7 @@
     .status-box h4 { color: #f57f17; font-size: 14px; margin-bottom: 5px; }
     .status-box p { font-size: 13px; color: #555; }
 
-    .btn-absen { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; margin-bottom: 10px; }
+    .btn-absen { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; margin-bottom: 12px; }
     .btn-masuk { background-color: #27ae60; }
     .btn-masuk:hover { background-color: #219653; }
     .btn-pulang { background-color: #e67e22; }
@@ -31,13 +31,14 @@
     .riwayat-table th { background-color: #0a3622; color: white; }
     .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
     .badge-hadir { background-color: #27ae60; }
+    .badge-pulang { background-color: #e67e22; }
     .badge-terlambat { background-color: #e74c3c; }
   </style>
 
   <!-- SCRIPT FIREBASE -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -54,4 +55,196 @@
     // Koordinat MAN 3 Bogor (Jonggol)
     const TARGET_LAT = -6.457952;
     const TARGET_LNG = 107.055545;
-    const MAX_JARAK_METER = 150; // Toleransi radius 150 meter dari
+    const MAX_JARAK_METER = 200; // Toleransi radius 200 meter dari madrasah
+
+    // Hitung Jarak Koordinat (Haversine Formula)
+    function hitungJarak(lat1, lon1, lat2, lon2) {
+      const R = 6371e3; // Radius bumi dalam meter
+      const φ1 = lat1 * Math.PI/180;
+      const φ2 = lat2 * Math.PI/180;
+      const Δφ = (lat2-lat1) * Math.PI/180;
+      const Δλ = (lon2-lon1) * Math.PI/180;
+
+      const a = Math.sin(Δφ/2) * Math.sin(Δφ/2) +
+                Math.cos(φ1) * Math.cos(φ2) *
+                Math.sin(Δλ/2) * Math.sin(Δλ/2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+
+      return R * c; // Jarak dalam meter
+    }
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const userId = localStorage.getItem("irmaUserId");
+      if (!userId) {
+        alert("Sesi login tidak ditemukan. Silakan login ulang.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      // Ambil Nama Siswa
+      try {
+        const userDoc = await getDoc(doc(db, "biodata_siswa", userId));
+        if (userDoc.exists()) {
+          document.getElementById("namaSiswa").innerText = userDoc.data().nama || "Anggota IRMA";
+        }
+      } catch (e) {
+        console.error(e);
+      }
+
+      muatRiwayat(userId);
+    });
+
+    // Fungsi Absen Masuk / Pulang
+    window.kirimAbsen = function(tipe) {
+      const userId = localStorage.getItem("irmaUserId");
+      if (!userId) return;
+
+      if (!navigator.geolocation) {
+        alert("❌ Browser Anda tidak Mendukung Geolocation.");
+        return;
+      }
+
+      document.getElementById("statusGPS").innerText = "📍 Sedang mendeteksi posisi GPS Anda...";
+
+      navigator.geolocation.getCurrentPosition(async (position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+
+        const jarak = hitungJarak(userLat, userLng, TARGET_LAT, TARGET_LNG);
+        document.getElementById("statusGPS").innerText = `📍 Jarak Anda dari MAN 3 Bogor: ${Math.round(jarak)} meter`;
+
+        if (jarak > MAX_JARAK_METER) {
+          alert(`❌ Absen Gagal! Anda berada di luar radius MAN 3 Bogor (Jarak: ${Math.round(jarak)} meter). Harap berada di lingkungan madrasah.`);
+          return;
+        }
+
+        const sekarang = new Date();
+        const tanggalHariIni = sekarang.toISOString().split('T')[0]; // Format YYYY-MM-DD
+        const jamSekarang = sekarang.toTimeString().split(' ')[0]; // Format HH:MM:SS
+
+        const docId = `${userId}_${tanggalHariIni}`;
+        const absenRef = doc(db, "kehadiran_siswa", docId);
+
+        try {
+          const docSnap = await getDoc(absenRef);
+          let dataAbsen = docSnap.exists() ? docSnap.data() : { userId, tanggal: tanggalHariIni };
+
+          if (tipe === 'masuk') {
+            const batasMasuk = "08:00:00";
+            const statusMasuk = jamSekarang <= batasMasuk ? "Hadir (Tepat Waktu)" : "Terlambat";
+            
+            dataAbsen.jamMasuk = jamSekarang;
+            dataAbsen.statusMasuk = statusMasuk;
+            
+            await setDoc(absenRef, dataAbsen, { merge: true });
+            alert(`✅ Absen Masuk Berhasil pada Pukul ${jamSekarang}! Status: ${statusMasuk}`);
+          } 
+          else if (tipe === 'pulang') {
+            const batasPulang = "12:00:00";
+            if (jamSekarang < "12:00:00") {
+              if (!confirm("⚠️ Belum pukul 12.00 WIB. Yakin ingin melakukan absensi pulang sekarang?")) {
+                return;
+              }
+            }
+
+            dataAbsen.jamPulang = jamSekarang;
+            dataAbsen.statusPulang = "Pulang";
+
+            await setDoc(absenRef, dataAbsen, { merge: true });
+            alert(`✅ Absen Pulang Berhasil dicatat pada Pukul ${jamSekarang}!`);
+          }
+
+          muatRiwayat(userId);
+
+        } catch (error) {
+          alert("❌ Gagal menyimpan absensi: " + error.message);
+        }
+
+      }, (error) => {
+        alert("❌ Gagal mendeteksi lokasi GPS. Pastikan izin lokasi (Location Permission) browser aktif.");
+        console.error(error);
+      }, { enableHighAccuracy: true });
+    }
+
+    async function muatRiwayat(userId) {
+      const tbody = document.getElementById("riwayatBody");
+      tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">⏳ Memuat riwayat...</td></tr>`;
+
+      try {
+        const querySnapshot = await getDocs(collection(db, "kehadiran_siswa"));
+        tbody.innerHTML = "";
+        let no = 1;
+        let adaData = false;
+
+        querySnapshot.forEach((docSnap) => {
+          const d = docSnap.data();
+          if (d.userId === userId) {
+            adaData = true;
+            const badgeMasuk = d.statusMasuk === "Terlambat" ? "badge-terlambat" : "badge-hadir";
+            
+            tbody.innerHTML += `
+              <tr>
+                <td>${no++}</td>
+                <td>${d.tanggal}</td>
+                <td>${d.jamMasuk || '-'} <br><span class="badge ${badgeMasuk}">${d.statusMasuk || ''}</span></td>
+                <td>${d.jamPulang || '-'}</td>
+                <td>${d.statusPulang || 'Belum Pulang'}</td>
+              </tr>
+            `;
+          }
+        });
+
+        if (!adaData) {
+          tbody.innerHTML = `<tr><td colspan="5" style="text-align:center;">Belum ada riwayat kehadiran.</td></tr>`;
+        }
+      } catch (error) {
+        console.error(error);
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:red;">Gagal memuat riwayat.</td></tr>`;
+      }
+    }
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card">
+      <h2>📋 Kehadiran Anggota - <span id="namaSiswa">Loading...</span></h2>
+      
+      <div class="info-lokasi">
+        <b>📍 Lokasi Presensi:</b> MAN 3 Bogor (MAN Jonggol)<br>
+        Jl. Rawa Gumbira No. 39, Sukamaju, Jonggol, Kab. Bogor.<br>
+        ⏱️ <b>Jam Masuk:</b> 08.00 WIB | ⏱️ <b>Jam Pulang:</b> 12.00 WIB
+      </div>
+
+      <div class="status-box">
+        <h4 id="statusGPS">📍 Menunggu deteksi GPS lokasi Anda...</h4>
+        <p style="font-size: 11px; color: #666; margin-top: 3px;">Pastikan Anda berada di area lingkungan madrasah (radius ±200 meter).</p>
+      </div>
+
+      <button onclick="kirimAbsen('masuk')" class="btn-absen btn-masuk">🟢 Absen Masuk (Batas 08:00 WIB)</button>
+      <button onclick="kirimAbsen('pulang')" class="btn-absen btn-pulang">🟠 Absen Pulang (Mulai 12:00 WIB)</button>
+    </div>
+
+    <div class="card">
+      <h2>📜 Riwayat Kehadiran Saya</h2>
+      <div style="overflow-x: auto;">
+        <table class="riwayat-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Tanggal</th>
+              <th>Jam Masuk</th>
+              <th>Jam Pulang</th>
+              <th>Keterangan</th>
+            </tr>
+          </thead>
+          <tbody id="riwayatBody">
+            <tr><td colspan="5" style="text-align:center;">Memuat riwayat...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
