@@ -447,7 +447,7 @@
       }
     }
 
-    // FUNGSI MEMUAT DATA SISWA & PEMILAHAN KELAS X DAN XI YANG TEPAT
+    // FUNGSI MEMUAT DATA SISWA & REKAP IURAN (Filter Kelas X & XI yang disempurnakan)
     async function muatDataSiswaIuran(totalIuranCallback) {
       const checkReady = setInterval(async () => {
         if (window.db && window.fbTools) {
@@ -485,6 +485,9 @@
               const nisnSiswa = siswa.nisn || siswa.NISN || siswa.nis || siswa.noId || "-";
               const kelasStr = String(kelasSiswa).trim().toUpperCase();
 
+              // Klasifikasi akurat: Kelas 11 adalah yang mengandung "XI" atau berawalan "11"
+              const isKelas11 = kelasStr.includes("XI") || kelasStr.startsWith("11");
+
               // Ambil data iuran siswa
               const iuranSnap = await getDoc(doc(window.db, "iuran_bulanan", siswaId));
               const iuranData = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
@@ -506,13 +509,12 @@
 
               tr.innerHTML = htmlTD;
 
-              // PEMILAHAN KELAS YANG AKURAT
-              if (kelasStr.includes("XI") || kelasStr.startsWith("11")) {
-                tr.innerHTML = tr.innerHTML.replace("__NO__", no11++);
-                tbody11.appendChild(tr);
-              } else {
+              if (!isKelas11) {
                 tr.innerHTML = tr.innerHTML.replace("__NO__", no10++);
                 tbody10.appendChild(tr);
+              } else {
+                tr.innerHTML = tr.innerHTML.replace("__NO__", no11++);
+                tbody11.appendChild(tr);
               }
             }
 
