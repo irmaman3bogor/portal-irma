@@ -1,7 +1,160 @@
-<script>
-    let base64Foto = ""; // Variabel untuk menyimpan data foto
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Entri Biodata - Portal IRMA</title>
+  <style>
+    body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
+    .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
+    
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+    label { font-size: 13px; font-weight: bold; color: #0a3622; margin-bottom: 5px; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; background-color: #fff; }
+    .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
+    .btn-simpan:hover { background: #1a5c3a; }
+    .btn-simpan:disabled { background: #888; cursor: not-allowed; }
+    .preview-img { max-width: 100px; max-height: 100px; margin-top: 10px; border-radius: 6px; object-fit: cover; display: none; border: 2px solid #0a3622; }
+    
+    .hidden { display: none !important; }
+  </style>
 
-    // Fungsi untuk mengatur tampilan form berdasarkan pilihan jabatan
+  <!-- SCRIPT FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    const app = initializeApp(firebaseConfig);
+    window.db = getFirestore(app);
+    window.fb = { doc, setDoc, getDoc };
+  </script>
+</head>
+<body>
+
+  <div class="card">
+    <h2>📝 Entri Biodata & Pengurus Portal IRMA</h2>
+    
+    <form id="formBiodata" onsubmit="simpanData(event)">
+      
+      <div class="form-group">
+        <label>Foto Profil (Maks 300KB)</label>
+        <input type="file" id="inFoto" accept="image/*" onchange="previewFoto(event)">
+        <img id="imgPreview" class="preview-img" alt="Preview Foto">
+      </div>
+
+      <!-- JABATAN -->
+      <div class="form-group">
+        <label>Jabatan / Status</label>
+        <select id="inJabatan" onchange="aturForm()" required>
+          <option value="">-- Pilih Jabatan --</option>
+          <optgroup label="Pengurus / Dewan Pembina">
+            <option value="Kepala Madrasah">Kepala Madrasah</option>
+            <option value="Pembina">Pembina</option>
+            <option value="Pelatih">Pelatih</option>
+          </optgroup>
+          <optgroup label="Siswa / Pengurus IRMA">
+            <option value="Ketua">01 - Ketua</option>
+            <option value="Wakil Ketua">02 - Wakil Ketua</option>
+            <option value="Sekretaris 1">03 - Sekretaris 1</option>
+            <option value="Sekretaris 2">04 - Sekretaris 2</option>
+            <option value="Bendahara 1">05 - Bendahara 1</option>
+            <option value="Bendahara 2">06 - Bendahara 2</option>
+            <option value="Divisi Pendidikan">07 - Divisi Pendidikan</option>
+            <option value="Divisi Masjid dan Dakwah">08 - Divisi Masjid dan Dakwah</option>
+            <option value="Divisi TIK (Teknologi Informasi dan Komunikasi)">09 - Divisi TIK (Teknologi Informasi dan Komunikasi)</option>
+            <option value="Divisi Hubungan Masyarakat">10 - Divisi Hubungan Masyarakat</option>
+            <option value="Anggota">11 - Anggota</option>
+            <option value="Anggota Istimewa">12 - Anggota Istimewa</option>
+          </optgroup>
+        </select>
+      </div>
+
+      <!-- NO ID (BARU) -->
+      <div class="form-group">
+        <label>No ID (Nomor Induk Anggota / Pegawai)</label>
+        <input type="text" id="inNoId" placeholder="Masukkan Nomor ID" required>
+      </div>
+
+      <div class="form-group">
+        <label>Nama Lengkap (beserta Gelar jika ada)</label>
+        <input type="text" id="inNama" placeholder="Masukkan nama lengkap" required>
+      </div>
+
+      <!-- BAGIAN KHUSUS SISWA -->
+      <div id="formSiswaContainer">
+        <div class="form-group">
+          <label>NIS</label>
+          <input type="text" id="inNis" placeholder="Masukkan NIS">
+        </div>
+
+        <div class="form-group">
+          <label>Kelas</label>
+          <select id="inKelas">
+            <option value="">-- Pilih Kelas --</option>
+            <option value="10">10</option>
+            <option value="11">11</option>
+            <option value="12">12</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Jurusan</label>
+          <select id="inJurusan">
+            <option value="">-- Pilih Jurusan --</option>
+            <option value="MIPA">MIPA</option>
+            <option value="IPS">IPS</option>
+            <option value="Keagamaan">Keagamaan</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nama Orang Tua / Wali</label>
+          <input type="text" id="inNamaOrtu" placeholder="Masukkan nama orang tua">
+        </div>
+
+        <div class="form-group">
+          <label>No HP Orang Tua / Wali</label>
+          <input type="tel" id="inHpOrtu" placeholder="Contoh: 08123456789">
+        </div>
+      </div>
+      <!-- BATAS KHUSUS SISWA -->
+
+      <div class="form-group">
+        <label>Tempat Lahir</label>
+        <input type="text" id="inTempatLahir" placeholder="Contoh: BOGOR">
+      </div>
+
+      <div class="form-group">
+        <label>Tanggal Lahir</label>
+        <input type="date" id="inTanggalLahir">
+      </div>
+
+      <div class="form-group">
+        <label>No HP / WhatsApp</label>
+        <input type="tel" id="inNoHp" placeholder="Contoh: 08123456789">
+      </div>
+
+      <div class="form-group">
+        <label>Alamat</label>
+        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
+      </div>
+
+      <button type="submit" class="btn-simpan" id="btnSimpan">Simpan Data</button>
+    </form>
+  </div>
+
+  <script>
+    let base64Foto = ""; 
+
     window.aturForm = function() {
       const jabatan = document.getElementById("inJabatan").value;
       const containerSiswa = document.getElementById("formSiswaContainer");
@@ -11,26 +164,23 @@
       const jurusanInput = document.getElementById("inJurusan");
 
       if (jabatan === "Kepala Madrasah" || jabatan === "Pembina" || jabatan === "Pelatih") {
-        containerSiswa.classList.add("hidden"); // Sembunyikan field siswa
-        // Hapus 'required' agar form tidak error saat disimpan
+        containerSiswa.classList.add("hidden");
         nisInput.removeAttribute("required");
         kelasInput.removeAttribute("required");
         jurusanInput.removeAttribute("required");
       } else {
-        containerSiswa.classList.remove("hidden"); // Tampilkan field siswa
-        // Tambahkan kembali 'required'
+        containerSiswa.classList.remove("hidden");
         nisInput.setAttribute("required", "true");
         kelasInput.setAttribute("required", "true");
         jurusanInput.setAttribute("required", "true");
       }
     }
 
-    // Fungsi untuk pratinjau foto
     function previewFoto(event) {
       const file = event.target.files[0];
       if (file) {
-        if (file.size > 300 * 1024) { // Batas 300KB
-          alert("Ukuran foto terlalu besar! Maksimal 300KB.");
+        if (file.size > 300 * 1024) {
+          alert("Ukuran foto terlalu besar! Maksimal 300KB agar muat di database.");
           event.target.value = ""; 
           document.getElementById("imgPreview").style.display = "none";
           base64Foto = "";
@@ -42,71 +192,52 @@
           const img = document.getElementById("imgPreview");
           img.src = e.target.result;
           img.style.display = "block";
-          base64Foto = e.target.result; // Simpan Base64 foto
+          base64Foto = e.target.result; 
         };
         reader.readAsDataURL(file);
       }
     }
 
-    // --- FITUR BARU: AMBIL DAN TAMPILKAN DATA SAAT HALAMAN DIMUAT ---
-    // Gunakan event 'DOMContentLoaded' agar kode berjalan saat HTML selesai dimuat
+    // OTOMATIS AMBIL DATA SAAT HALAMAN DIBUKA
     document.addEventListener("DOMContentLoaded", async () => {
-        // 1. Ambil SDK Firestore yang diperlukan
-        // (Bapak tidak perlu mengimpor ulang initializeApp, cukup db dan fb yang sudah ada)
-        const { getDoc, doc } = await import("https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js");
-        const userId = localStorage.getItem("irmaUserId");
+      const userId = localStorage.getItem("irmaUserId");
+      if (!userId) return;
 
-        if (!userId) {
-          alert("❌ Sesi login tidak ditemukan. Silakan login ulang.");
-          window.location.href = "index.html"; // Redirect jika tidak ada sesi
-          return;
-        }
+      try {
+        const { doc, getDoc } = window.fb;
+        const docSnap = await getDoc(doc(window.db, "biodata_siswa", userId));
 
-        try {
-          // 2. Ambil dokumen dari Firestore
-          const docRef = doc(window.db, "biodata_siswa", userId);
-          const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
 
-          if (docSnap.exists()) {
-            const data = docSnap.data();
+          document.getElementById("inJabatan").value = data.jabatan || "";
+          window.aturForm(); // Sesuaikan tampilan form berdasarkan jabatan yang tersimpan
 
-            // 3. Isi Formulir dengan data yang ada
-            document.getElementById("inJabatan").value = data.jabatan || "";
-            document.getElementById("inNama").value = data.nama || "";
-            document.getElementById("inTempatLahir").value = data.tempatLahir || "";
-            document.getElementById("inTanggalLahir").value = data.tanggalLahir || "";
-            document.getElementById("inNoHp").value = data.noHp || "";
-            document.getElementById("inAlamat").value = data.alamat || "";
+          document.getElementById("inNoId").value = data.noId || "";
+          document.getElementById("inNama").value = data.nama || "";
+          document.getElementById("inTempatLahir").value = data.tempatLahir || "";
+          document.getElementById("inTanggalLahir").value = data.tanggalLahir || "";
+          document.getElementById("inNoHp").value = data.noHp || "";
+          document.getElementById("inAlamat").value = data.alamat || "";
 
-            // ⚠️ SOLUSI KUNCI 1: Pulihkan State Dropdown Dinamis ⚠️
-            // Jalankan fungsi aturForm() secara manual setelah mengisi field jabatan
-            window.aturForm();
+          if (data.nis) document.getElementById("inNis").value = data.nis;
+          if (data.kelas) document.getElementById("inKelas").value = data.kelas;
+          if (data.jurusan) document.getElementById("inJurusan").value = data.jurusan;
+          if (data.namaOrtu) document.getElementById("inNamaOrtu").value = data.namaOrtu;
+          if (data.hpOrtu) document.getElementById("inHpOrtu").value = data.hpOrtu;
 
-            // 4. Isi field siswa hanya jika jabatannya adalah siswa
-            if (data.nis) document.getElementById("inNis").value = data.nis;
-            if (data.kelas) document.getElementById("inKelas").value = data.kelas;
-            if (data.jurusan) document.getElementById("inJurusan").value = data.jurusan;
-            if (data.namaOrtu) document.getElementById("inNamaOrtu").value = data.namaOrtu;
-            if (data.hpOrtu) document.getElementById("inHpOrtu").value = data.hpOrtu;
-
-            // ⚠️ SOLUSI KUNCI 2: Pulihkan Pratinjau Foto ⚠️
-            if (data.fotoUrl) {
-              base64Foto = data.fotoUrl; // Simpan kembali ke variabel global
-              const imgPreview = document.getElementById("imgPreview");
-              imgPreview.src = data.fotoUrl;
-              imgPreview.style.display = "block";
-            }
-          } else {
-            // Data tidak ditemukan di Firestore, formulir tetap kosong
-            console.log("No such document!");
+          if (data.fotoUrl) {
+            base64Foto = data.fotoUrl;
+            const imgPreview = document.getElementById("imgPreview");
+            imgPreview.src = data.fotoUrl;
+            imgPreview.style.display = "block";
           }
-        } catch (error) {
-          console.error("Error getting document:", error);
-          alert("❌ Gagal mengambil data: " + error.message);
         }
+      } catch (error) {
+        console.error("Gagal memuat data:", error);
+      }
     });
 
-    // --- FUNGSI SIMPAN DATA (Dipertahankan dari sebelumnya) ---
     window.simpanData = async function(e) {
       e.preventDefault();
       const btn = document.getElementById("btnSimpan");
@@ -127,13 +258,14 @@
         const isPengurus = (jabatan === "Kepala Madrasah" || jabatan === "Pembina" || jabatan === "Pelatih");
 
         const dataEntri = {
+          noId: document.getElementById("inNoId").value,
           nama: document.getElementById("inNama").value,
           jabatan: jabatan,
           tempatLahir: document.getElementById("inTempatLahir").value,
           tanggalLahir: document.getElementById("inTanggalLahir").value,
           noHp: document.getElementById("inNoHp").value,
           alamat: document.getElementById("inAlamat").value,
-          fotoUrl: base64Foto, // Gunakan variabel base64Foto yang sudah ada
+          fotoUrl: base64Foto, 
           updatedAt: new Date().toISOString()
         };
 
@@ -144,7 +276,6 @@
           dataEntri.namaOrtu = document.getElementById("inNamaOrtu").value;
           dataEntri.hpOrtu = document.getElementById("inHpOrtu").value;
         } else {
-          // Kosongkan field siswa
           dataEntri.nis = "";
           dataEntri.kelas = "";
           dataEntri.jurusan = "";
@@ -166,3 +297,5 @@
       }
     }
   </script>
+</body>
+</html>
