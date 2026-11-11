@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Migrasi Data Anggota IRMA ke Firebase</title>
+  <style>
+    body { font-family: sans-serif; padding: 40px; text-align: center; background: #f4f6f9; }
+    .card { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); display: inline-block; }
+    button { padding: 12px 24px; background: #0a3622; color: white; border: none; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; }
+    button:hover { background: #1a5c3a; }
+    #log { margin-top: 20px; font-size: 14px; color: #333; text-align: left; max-height: 250px; overflow-y: auto; background: #f8f9fa; padding: 10px; border-radius: 6px; }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+    <h2>🚀 Migrasi 43 Data Anggota IRMA</h2>
+    <p>Klik tombol di bawah untuk memasukkan data ke database Firestore secara otomatis.</p>
+    <br>
+    <button onclick="mulaiMigrasi()">Mulai Migrasi Data</button>
+    <div id="log"></div>
+  </div>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    const dataAnggota = [
+      { nisn: "106675269", nama: "NAZWA MAYSHA ANDINI", nis: "131132010002250240", kelas: "X9", noHp: "85715395978", jabatan: "Anggota IRMA" },
+      { nisn: "111986611", nama: "Dinda marveli restiyanti", nis: "131132010002260122", kelas: "X3", noHp: "88289958869", jabatan: "Anggota IRMA" },
+      { nisn: "108931786", nama: "Bintang Rafa Zaviero", nis: "131132010002260093", kelas: "X6", noHp: "81995862037", jabatan: "Anggota IRMA" },
+      { nisn: "108161570", nama: "Muhamad Zahran al firdaus", nis: "232407043", kelas: "X10", noHp: "85604853632", jabatan: "Anggota IRMA" },
+      { nisn: "119266853", nama: "Elvira Syahreza Farah Ardhani", nis: "131132010002260128", kelas: "X6", noHp: "85779036394", jabatan: "Anggota IRMA" },
+      { nisn: "111915556", nama: "Abdurrahman ghofar", nis: "", kelas: "X6", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104127893", nama: "Kayla indah nur aulia", nis: "", kelas: "X5", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "92772896", nama: "VALYA AULIA PUTRI", nis: "", kelas: "XI.8", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "117432569", nama: "RAFIFAH HAZNA RAHDATUL AISY", nis: "", kelas: "X9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104636995", nama: "Nabila Qonita", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "106701536", nama: "MAULANA SHOLEH MANSURUDIN", nis: "", kelas: "XI.2", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "107332809", nama: "Rifda Aprilia Holilah", nis: "", kelas: "XI.7", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "101019613", nama: "FITRI AL THOFUNNISA", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104532240", nama: "Alfath rahmathul syafar", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "106900516", nama: "Naelul Hasanah", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "103842662", nama: "Nur Fajri Irawan", nis: "", kelas: "XI.9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "92832772", nama: "Zahra Aulia Chaerunisa", nis: "", kelas: "XI.1", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104409058", nama: "Muhammad Ramdhan putra aji", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "98814361", nama: "Wahyu Rifa'atuz Zahra", nis: "", kelas: "XI.9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "96601495", nama: "Bayu Mustiko Aji Malibari", nis: "", kelas: "XI.2", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "103199923", nama: "Muhammad Nizam Muharram", nis: "", kelas: "XI.8", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "96561769", nama: "IRGI SETIAWAN", nis: "", kelas: "XI.8", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "3109216043", nama: "Erlangga Lousesatria Bahri", nis: "", kelas: "X6", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104965743", nama: "Zahra Maulida", nis: "", kelas: "XI.9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "97376081", nama: "syifa rahmadani", nis: "", kelas: "XI.9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "98778557", nama: "FARAS FADILAH RAMADHAN", nis: "", kelas: "XI.3", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "101221471", nama: "Meiliza Lova", nis: "", kelas: "X7", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104794994", nama: "Putra Radja Alhardana", nis: "", kelas: "XI.2", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "107959835", nama: "Muhammad Nazmi Khalil", nis: "", kelas: "XI.2", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "102251085", nama: "Muhamad Rifky Rizqullah", nis: "", kelas: "X9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "109370504", nama: "rasya athar maulana", nis: "", kelas: "XI.4", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "105810869", nama: "Wafi Nur Razan", nis: "", kelas: "XI.9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "94729768", nama: "Naila Afni Huwaida", nis: "", kelas: "XI.3", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "107791772", nama: "RINDU SALWA NAYLA SUCI", nis: "", kelas: "XI.7", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "99591154", nama: "Lutfi Cahaya Ramadan", nis: "", kelas: "XI.8", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "119055699", nama: "irma", nis: "", kelas: "X1", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "102922460", nama: "Muhammad Reyhan Adriyansyah Saepudin", nis: "", kelas: "XI.6", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "104270329", nama: "Nazran multaz wijaya", nis: "", kelas: "X9", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "109720813", nama: "Silvia Azzahra", nis: "", kelas: "X8", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "91363821", nama: "Muhammad Alfatih", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "117812751", nama: "SITI HANIFAH MUTHMAINAH", nis: "", kelas: "X11", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "92087652", nama: "Nazwan Nadhif Lesmana", nis: "", kelas: "XI.6", noHp: "", jabatan: "Anggota IRMA" },
+      { nisn: "111584096", nama: "AHMAD ALPIN MUBAROK", nis: "", kelas: "X2", noHp: "", jabatan: "Anggota IRMA" }
+    ];
+
+    window.mulaiMigrasi = async function() {
+      const logDiv = document.getElementById("log");
+      logDiv.innerHTML = "⏳ Memulai pengiriman data ke Firebase...<br>";
+
+      let count = 1;
+      for (const siswa of dataAnggota) {
+        try {
+          const docId = "siswa_" + count;
+          siswa.noId = siswa.nis || siswa.nisn;
+          
+          // Simpan ke koleksi biodata_siswa
+          await setDoc(doc(db, "biodata_siswa", docId), siswa);
+          
+          logDiv.innerHTML += `✅ [${count}/43] Berhasil: ${siswa.nama} (${siswa.kelas})<br>`;
+          count++;
+        } catch (err) {
+          logDiv.innerHTML += `❌ Gagal ${siswa.nama}: ${err.message}<br>`;
+        }
+      }
+      logDiv.innerHTML += "<br><b>🎉 Migrasi Selesai! Semua data 43 siswa sudah masuk ke Firestore.</b>";
+    }
+  </script>
+</body>
+</html>
