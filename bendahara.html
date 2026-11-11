@@ -46,7 +46,7 @@
     @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
     
     .box { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow-x: auto; }
-    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
+    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #555; }
@@ -57,7 +57,7 @@
     
     /* TABEL */
     .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
     th { background: #f8f9fa; color: #0077b6; font-weight: 700; text-align: center; }
     td { text-align: left; }
@@ -70,7 +70,13 @@
     .action-btn { padding: 5px 8px; border: none; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; color: white; margin-right: 3px; }
     .btn-edit { background: #f39c12; }
     .btn-delete { background: #e74c3c; }
+    .btn-add { background: #2a9d8f; padding: 6px 12px; border-radius: 6px; font-size: 12px; color: white; border: none; cursor: pointer; font-weight: 700; }
     
+    /* MODAL */
+    .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .modal-content h3 { margin-top: 0; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 8px; }
+
     /* CHECKBOX IURAN */
     .checkbox-iuran { width: 18px; height: 18px; cursor: pointer; accent-color: #2a9d8f; }
 
@@ -86,7 +92,7 @@
 
     @media print {
       body { background: white; padding: 0; }
-      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout { display: none; }
+      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-add { display: none; }
       .container { max-width: 100%; }
       .tab-content { display: block !important; }
       .box { box-shadow: none; border: 1px solid #ccc; }
@@ -197,7 +203,10 @@
     <!-- TAB KELAS X -->
     <div id="tabKelas10" class="tab-content">
       <div class="box">
-        <h3>📋 Rekap Iuran Kas Bulanan - Anggota Kelas X (Rp 10.000/bln)</h3>
+        <h3>
+          <span>📋 Rekap Iuran Kas Bulanan - Anggota Kelas X (Rp 10.000/bln)</span>
+          <button class="btn-add" onclick="bukaModalSiswa()">+ Tambah Siswa Baru</button>
+        </h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
         <div class="table-responsive">
           <table>
@@ -209,10 +218,11 @@
                 <th style="width: 70px;">Kelas</th>
                 <th>Juli</th><th>Agustus</th><th>September</th><th>Oktober</th><th>November</th><th>Desember</th>
                 <th>Januari</th><th>Februari</th><th>Maret</th><th>April</th><th>Mei</th><th>Juni</th>
+                <th style="width: 100px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelKelas10Body">
-              <tr><td colspan="16" class="text-center">Memuat data siswa kelas X...</td></tr>
+              <tr><td colspan="17" class="text-center">Memuat data siswa kelas X...</td></tr>
             </tbody>
           </table>
         </div>
@@ -222,7 +232,10 @@
     <!-- TAB KELAS XI -->
     <div id="tabKelas11" class="tab-content">
       <div class="box">
-        <h3>📋 Rekap Iuran Kas Bulanan - Anggota Kelas XI (Rp 10.000/bln)</h3>
+        <h3>
+          <span>📋 Rekap Iuran Kas Bulanan - Anggota Kelas XI (Rp 10.000/bln)</span>
+          <button class="btn-add" onclick="bukaModalSiswa()">+ Tambah Siswa Baru</button>
+        </h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
         <div class="table-responsive">
           <table>
@@ -234,10 +247,11 @@
                 <th style="width: 70px;">Kelas</th>
                 <th>Juli</th><th>Agustus</th><th>September</th><th>Oktober</th><th>November</th><th>Desember</th>
                 <th>Januari</th><th>Februari</th><th>Maret</th><th>April</th><th>Mei</th><th>Juni</th>
+                <th style="width: 100px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelKelas11Body">
-              <tr><td colspan="16" class="text-center">Memuat data siswa kelas XI...</td></tr>
+              <tr><td colspan="17" class="text-center">Memuat data siswa kelas XI...</td></tr>
             </tbody>
           </table>
         </div>
@@ -345,6 +359,30 @@
 
   </div>
 
+  <!-- MODAL TAMBAH / EDIT SISWA -->
+  <div id="modalSiswa" class="modal">
+    <div class="modal-content">
+      <h3 id="modalSiswaTitle">Tambah / Edit Data Siswa</h3>
+      <form id="formSiswaManual" onsubmit="simpanSiswaManual(event)">
+        <input type="hidden" id="siswaEditId" value="">
+        <div class="form-group">
+          <label>NISN / NIS</label>
+          <input type="text" id="inputNisn" placeholder="Contoh: 106675269" required />
+        </div>
+        <div class="form-group">
+          <label>Nama Lengkap Siswa</label>
+          <input type="text" id="inputNama" placeholder="Contoh: Ahmad Fauzi" required />
+        </div>
+        <div class="form-group">
+          <label>Kelas (Contoh: X9 atau XI.2)</label>
+          <input type="text" id="inputKelas" placeholder="Contoh: X9 atau XI.1" required />
+        </div>
+        <button type="submit" class="btn-submit">Simpan Data Siswa</button>
+        <button type="button" class="btn-submit btn-cancel" style="display:block;" onclick="tutupModalSiswa()">Batal</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     let chartInstance = null;
     const NOMINAL_IURAN = 10000;
@@ -447,7 +485,59 @@
       }
     }
 
-    // FUNGSI MEMUAT DATA SISWA & PEMILAHAN KELAS X DAN XI YANG TEPAT
+    // FUNGSI MODAL TAMBAH / EDIT SISWA MANUAL
+    window.bukaModalSiswa = function(id = "", nisn = "", nama = "", kelas = "") {
+      document.getElementById("siswaEditId").value = id;
+      document.getElementById("inputNisn").value = nisn;
+      document.getElementById("inputNama").value = nama;
+      document.getElementById("inputKelas").value = kelas;
+      document.getElementById("modalSiswaTitle").innerText = id ? "Edit Data Siswa" : "Tambah Siswa Baru";
+      document.getElementById("modalSiswa").style.display = "flex";
+    }
+
+    window.tutupModalSiswa = function() {
+      document.getElementById("modalSiswa").style.display = "none";
+    }
+
+    window.simpanSiswaManual = async function(e) {
+      e.preventDefault();
+      const id = document.getElementById("siswaEditId").value;
+      const nisn = document.getElementById("inputNisn").value;
+      const nama = document.getElementById("inputNama").value;
+      const kelas = document.getElementById("inputKelas").value;
+
+      try {
+        const { doc, setDoc, addDoc, collection } = window.fbTools;
+        if (id) {
+          // Update data siswa
+          await setDoc(doc(window.db, "biodata_siswa", id), { nisn, nis: nisn, nama, Nama Lengkap: nama, kelas, Kelas: kelas }, { merge: true });
+          alert("Data siswa berhasil diperbarui!");
+        } else {
+          // Tambah baru
+          const newId = "siswa_" + Date.now();
+          await setDoc(doc(window.db, "biodata_siswa", newId), { nisn, nis: nisn, nama, "Nama Lengkap": nama, kelas, "Kelas": kelas, jabatan: "Anggota IRMA" });
+          alert("Siswa baru berhasil ditambahkan!");
+        }
+        tutupModalSiswa();
+        muatDataKas();
+      } catch (err) {
+        alert("Gagal menyimpan data siswa: " + err.message);
+      }
+    }
+
+    window.hapusSiswa = async function(id) {
+      if (!confirm("Yakin ingin menghapus siswa ini dari sistem?")) return;
+      try {
+        const { doc, deleteDoc } = window.fbTools;
+        await deleteDoc(doc(window.db, "biodata_siswa", id));
+        alert("Siswa berhasil dihapus!");
+        muatDataKas();
+      } catch (err) {
+        alert("Gagal menghapus siswa: " + err.message);
+      }
+    }
+
+    // FUNGSI MEMUAT DATA SISWA & REKAP IURAN
     async function muatDataSiswaIuran(totalIuranCallback) {
       const checkReady = setInterval(async () => {
         if (window.db && window.fbTools) {
@@ -470,8 +560,8 @@
             let totalNominalIuranSiswa = 0;
 
             if (siswaSnap.empty) {
-              tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
-              tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              tbody10.innerHTML = `<tr><td colspan="17" class="text-center">Belum ada data siswa. Klik "+ Tambah Siswa Baru".</td></tr>`;
+              tbody11.innerHTML = `<tr><td colspan="17" class="text-center">Belum ada data siswa. Klik "+ Tambah Siswa Baru".</td></tr>`;
               if (typeof totalIuranCallback === 'function') totalIuranCallback(0);
               return;
             }
@@ -504,9 +594,16 @@
                 htmlTD += `<td class="text-center"><input type="checkbox" class="checkbox-iuran" ${isChecked} onchange="updateIuranSiswa('${siswaId}', '${bulan}', this.checked)"></td>`;
               });
 
+              // Tombol Aksi Edit & Hapus
+              htmlTD += `
+                <td class="text-center">
+                  <button class="action-btn btn-edit" onclick="bukaModalSiswa('${siswaId}', '${nisnSiswa}', '${namaSiswa.replace(/'/g, "\\'")}', '${kelasSiswa}')">Edit</button>
+                  <button class="action-btn btn-delete" onclick="hapusSiswa('${siswaId}')">Hapus</button>
+                </td>
+              `;
+
               tr.innerHTML = htmlTD;
 
-              // PEMILAHAN KELAS YANG AKURAT
               if (kelasStr.includes("XI") || kelasStr.startsWith("11")) {
                 tr.innerHTML = tr.innerHTML.replace("__NO__", no11++);
                 tbody11.appendChild(tr);
@@ -516,8 +613,8 @@
               }
             }
 
-            if (tbody10.innerHTML === "") tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas X.</td></tr>`;
-            if (tbody11.innerHTML === "") tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas XI.</td></tr>`;
+            if (tbody10.innerHTML === "") tbody10.innerHTML = `<tr><td colspan="17" class="text-center">Tidak ada siswa Kelas X.</td></tr>`;
+            if (tbody11.innerHTML === "") tbody11.innerHTML = `<tr><td colspan="17" class="text-center">Tidak ada siswa Kelas XI.</td></tr>`;
 
             if (typeof totalIuranCallback === 'function') {
               totalIuranCallback(totalNominalIuranSiswa);
@@ -542,7 +639,7 @@
         data.updatedAt = new Date().toISOString();
 
         await setDoc(iuranRef, data, { merge: true });
-        muatDataKas(); // Refresh ulang laporan keuangan & tabel iuran
+        muatDataKas();
       } catch (error) {
         alert("Gagal memperbarui iuran: " + error.message);
       }
