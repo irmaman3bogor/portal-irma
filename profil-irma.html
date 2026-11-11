@@ -5,50 +5,147 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Profil IRMA - Portal IRMA</title>
   <style>
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; padding: 20px; margin: 0; color: #333; }
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f6f9; display: flex; height: 100vh; overflow: hidden; }
+
+    /* --- SIDEBAR (Sama untuk semua halaman) --- */
+    .sidebar { width: 260px; background-color: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
+    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+    .sidebar-header img { width: 60px; margin-bottom: 10px; }
+    .sidebar-header h2 { color: #d4af37; font-size: 18px; margin-bottom: 5px; }
+    .sidebar-header p { font-size: 11px; color: #ccc; }
+    .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
+    .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; border-left: 4px solid transparent; }
+    .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255,255,255,0.05); border-left-color: #d4af37; color: #d4af37; }
+    .sidebar-menu a span { margin-right: 15px; font-size: 16px; }
+
+    /* --- MAIN CONTENT --- */
+    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
+    .top-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
+    .top-header h1 { font-size: 20px; color: #0a3622; }
+    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; }
+    
+    .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
+
+    /* --- KONTEN PROFIL --- */
+    .content-body { padding: 30px; flex: 1; }
     .card { background: white; border-radius: 12px; padding: 30px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); max-width: 800px; margin: 0 auto; }
-    h2 { color: #0a3622; text-align: center; margin-top: 0; }
+    .card h2 { color: #0a3622; text-align: center; margin-top: 0; margin-bottom: 10px; }
     .section { margin-bottom: 30px; }
     .section h3 { color: #d4af37; border-bottom: 2px solid #0a3622; padding-bottom: 5px; display: inline-block; margin-bottom: 15px; }
-    p, li { line-height: 1.6; color: #555; font-size: 15px; }
-    ul { padding-left: 20px; }
+    .card p, .card li { line-height: 1.6; color: #555; font-size: 15px; }
+    .card ul { padding-left: 20px; }
     .highlight { background: #e8f5e9; padding: 15px; border-left: 5px solid #0a3622; border-radius: 4px; font-style: italic; }
+
+    /* --- TOMBOL KEMBALI --- */
+    .btn-kembali { background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
+    .btn-kembali:hover { background: #5a6268; }
+
+    /* --- RESPONSIF HP --- */
+    @media (max-width: 768px) {
+      .sidebar { position: fixed; left: -260px; height: 100vh; }
+      .sidebar.open { left: 0; }
+      .menu-toggle { display: block; }
+      .top-header { padding: 15px 20px; }
+      .content-body { padding: 15px; }
+      .card { padding: 20px; }
+    }
   </style>
 </head>
 <body>
 
-  <div class="card">
-    <h2>🕌 PROFIL EKSKUL IRMA</h2>
-    <p style="text-align: center; color: #666;">Ikatan Remaja Masjid MAN 3 Bogor</p>
-
-    <div class="section">
-      <h3>📖 Visi</h3>
-      <p>Menjadi organisasi remaja masjid yang unggul, berakhlak mulia, dan berwawasan global berlandaskan nilai-nilai Islam yang rahmatan lil 'alamin.</p>
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <img src="logo.png" alt="Logo IRMA">
+      <h2>PORTAL IRMA</h2>
+      <p>MAN 3 BOGOR</p>
     </div>
-
-    <div class="section">
-      <h3>🎯 Misi</h3>
-      <ul>
-        <li>Meningkatkan keimanan dan ketakwaan anggota kepada Allah SWT.</li>
-        <li>Mengembangkan potensi anggota di bidang keagamaan, sosial, dan kepemimpinan.</li>
-        <li>Menyelenggarakan kegiatan yang bermanfaat bagi madrasah dan masyarakat.</li>
-        <li>Menjadi wadah silaturahmi antar siswa MAN 3 Bogor.</li>
-      </ul>
-    </div>
-
-    <div class="section">
-      <h3>🏆 Tujuan</h3>
-      <ul>
-        <li>Terbentuknya karakter siswa yang religius dan berintegritas.</li>
-        <li>Terciptanya lingkungan madrasah yang bersih, indah, dan islami.</li>
-        <li>Meningkatnya partisipasi siswa dalam kegiatan keagamaan.</li>
-      </ul>
-    </div>
-
-    <div class="highlight">
-      "Barangsiapa yang memakmurkan masjid Allah, maka Allah akan memakmurkan rumahnya di surga." (HR. Bukhari)
+    <div class="sidebar-menu">
+      <a href="beranda.html"><span>🏠</span> Home</a>
+      <!-- Menu Profil diberi class 'active' karena kita sedang di halaman ini -->
+      <a href="profil.html" class="active"><span>📖</span> Profil IRMA</a>
+      <a href="informasi.html"><span>📢</span> Informasi</a>
+      <a href="keuangan.html"><span>💰</span> Keuangan</a>
+      <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
+      <a href="data-anggota.html"><span>👥</span> Data Anggota</a>
+      <a href="kegiatan.html"><span>📅</span> Kegiatan</a>
+      <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
+      <a href="bendahara.html"><span>📊</span> Sistem Akuntansi IRMA</a> 
+      <a href="daftar-anggota.html"><span>📋</span> Daftar Anggota IRMA</a>
     </div>
   </div>
 
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
+    
+    <!-- HEADER -->
+    <div class="top-header">
+      <div style="display: flex; align-items: center;">
+        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+        <h1>Profil IRMA</h1>
+      </div>
+      <div style="display: flex; gap: 10px;">
+        <!-- TOMBOL KEMBALI -->
+        <a href="beranda.html" class="btn-kembali">⬅️ Kembali</a>
+        <button onclick="logout()" class="btn-logout">Keluar</button>
+      </div>
+    </div>
+
+    <!-- ISI KONTEN PROFIL (Dari kode Anda) -->
+    <div class="content-body">
+      <div class="card">
+        <h2>🕌 PROFIL EKSKUL IRMA</h2>
+        <p style="text-align: center; color: #666;">Ikatan Remaja Masjid MAN 3 Bogor</p>
+
+        <div class="section">
+          <h3>📖 Visi</h3>
+          <p>Menjadi organisasi remaja masjid yang unggul, berakhlak mulia, dan berwawasan global berlandaskan nilai-nilai Islam yang rahmatan lil 'alamin.</p>
+        </div>
+
+        <div class="section">
+          <h3>🎯 Misi</h3>
+          <ul>
+            <li>Meningkatkan keimanan dan ketakwaan anggota kepada Allah SWT.</li>
+            <li>Mengembangkan potensi anggota di bidang keagamaan, sosial, dan kepemimpinan.</li>
+            <li>Menyelenggarakan kegiatan yang bermanfaat bagi madrasah dan masyarakat.</li>
+            <li>Menjadi wadah silaturahmi antar siswa MAN 3 Bogor.</li>
+          </ul>
+        </div>
+
+        <div class="section">
+          <h3>🏆 Tujuan</h3>
+          <ul>
+            <li>Terbentuknya karakter siswa yang religius dan berintegritas.</li>
+            <li>Terciptanya lingkungan madrasah yang bersih, indah, dan islami.</li>
+            <li>Meningkatnya partisipasi siswa dalam kegiatan keagamaan.</li>
+          </ul>
+        </div>
+
+        <div class="highlight">
+          "Barangsiapa yang memakmurkan masjid Allah, maka Allah akan memakmurkan rumahnya di surga." (HR. Bukhari)
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    // Proteksi Login
+    if (localStorage.getItem("irmaLogin") !== "true") {
+      window.location.href = "index.html";
+    }
+    function logout() {
+      if (confirm("Yakin ingin keluar dari Portal IRMA?")) {
+        localStorage.removeItem("irmaLogin");
+        localStorage.removeItem("userLoginData");
+        window.location.href = "index.html";
+      }
+    }
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("open");
+    }
+  </script>
 </body>
 </html>
