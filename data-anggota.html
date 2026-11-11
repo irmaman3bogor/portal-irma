@@ -27,7 +27,7 @@
     .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; }
     .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
 
-    /* --- KONTEN TABEL (Dari Screenshot Anda) --- */
+    /* --- KONTEN TABEL --- */
     .content-body { padding: 30px; flex: 1; }
     .card-table { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow-x: auto; }
     .card-table h2 { color: #0a3622; margin-bottom: 20px; border-bottom: 2px solid #d4af37; display: inline-block; padding-bottom: 5px; }
@@ -56,6 +56,70 @@
       .content-body { padding: 15px; }
     }
   </style>
+
+  <!-- SCRIPT FIREBASE UNTUK DATA ANGGOTA -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, onSnapshot, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Fungsi untuk memuat data secara otomatis
+    const tabelBody = document.getElementById("tabelBody");
+    const q = collection(db, "anggota_irma"); // Pastikan nama collection di Firebase Anda adalah "anggota_irma"
+
+    onSnapshot(q, (snapshot) => {
+      tabelBody.innerHTML = ""; // Kosongkan tabel sebelum diisi
+      let no = 1;
+
+      if(snapshot.empty) {
+        tabelBody.innerHTML = `<tr><td colspan="6" style="text-align:center;">Belum ada data anggota.</td></tr>`;
+        return;
+      }
+
+      snapshot.forEach((docSnap) => {
+        const data = docSnap.data();
+        
+        // Jika foto tidak ada, pakai placeholder
+        const fotoUrl = data.foto ? data.foto : "https://via.placeholder.com/40";
+
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${no++}</td>
+          <td><img src="${fotoUrl}" style="border-radius:50%; width:40px; height:40px; object-fit:cover;"></td>
+          <td><strong>${data.nama || '-'}</strong></td>
+          <td>${data.nis || '-'}</td>
+          <td>${data.kelas || '-'}</td>
+          <td>
+            <a href="#" class="btn-action btn-view">View</a>
+            <button class="btn-action btn-hapus" onclick="hapusAnggota('${docSnap.id}', '${data.nama}')">Hapus</button>
+          </td>
+        `;
+        tabelBody.appendChild(tr);
+      });
+    });
+
+    // Fungsi Hapus Data
+    window.hapusAnggota = async function(id, nama) {
+      if(confirm(`Yakin ingin menghapus data "${nama}"?`)) {
+        try {
+          await deleteDoc(doc(db, "anggota_irma", id));
+          alert("Data berhasil dihapus!");
+        } catch (error) {
+          alert("Gagal menghapus data: " + error.message);
+        }
+      }
+    }
+  </script>
 </head>
 <body>
 
@@ -72,7 +136,6 @@
       <a href="informasi.html"><span>📢</span> Informasi</a>
       <a href="keuangan.html"><span>💰</span> Keuangan</a>
       <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
-      <!-- Menu Data Anggota di-set active -->
       <a href="data-anggota.html" class="active"><span>👥</span> Data Anggota</a>
       <a href="kegiatan.html"><span>📅</span> Kegiatan</a>
       <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
@@ -91,13 +154,12 @@
         <h1>Data Anggota</h1>
       </div>
       <div style="display: flex; gap: 10px;">
-        <!-- TOMBOL KEMBALI -->
         <a href="beranda.html" class="btn-kembali">⬅️ Kembali</a>
         <button onclick="logout()" class="btn-logout">Keluar</button>
       </div>
     </div>
 
-    <!-- ISI KONTEN (Tabel dari screenshot) -->
+    <!-- ISI KONTEN (Tabel) -->
     <div class="content-body">
       <div class="card-table">
         <h2>📋 Daftar Anggota IRMA</h2>
@@ -112,33 +174,9 @@
               <th>Aksi</th>
             </tr>
           </thead>
-          <tbody>
-            <!-- CATATAN: Baris di bawah ini adalah contoh statis. 
-                 Jika Anda menggunakan Firebase/JS untuk memuat data, hapus baris TR ini 
-                 dan biarkan JavaScript Anda yang mengisi tabelnya. -->
-            <tr>
-              <td>1</td>
-              <td><img src="https://via.placeholder.com/40" style="border-radius:50%; width:40px; height:40px;"></td>
-              <td><strong>AKU</strong></td>
-              <td>86896</td>
-              <td>10 - IPS</td>
-              <td>
-                <a href="#" class="btn-action btn-view">View</a>
-                <button class="btn-action btn-hapus">Hapus</button>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td><img src="https://via.placeholder.com/40" style="border-radius:50%; width:40px; height:40px;"></td>
-              <td><strong>ADI FIRMANSYAH</strong></td>
-              <td>80988798879798</td>
-              <td>10 - IPS</td>
-              <td>
-                <a href="#" class="btn-action btn-view">View</a>
-                <button class="btn-action btn-hapus">Hapus</button>
-              </td>
-            </tr>
-            <!-- Tambahkan baris data lainnya di sini atau biarkan JS yang mengisinya -->
+          <tbody id="tabelBody">
+            <!-- Data akan diisi otomatis oleh Firebase -->
+            <tr><td colspan="6" style="text-align:center;">Memuat data dari database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -146,8 +184,8 @@
 
   </div>
 
+  <!-- Script Proteksi & Sidebar -->
   <script>
-    // Proteksi Login
     if (localStorage.getItem("irmaLogin") !== "true") {
       window.location.href = "index.html";
     }
