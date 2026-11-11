@@ -5,14 +5,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Entri Biodata - Portal IRMA</title>
   <style>
-    /* CSS Polos untuk dalam Iframe */
+    /* CSS Polos, tanpa sidebar, agar menyatu di dalam iframe */
     body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
     .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
     h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
     
-    /* Style Form */
-    .form-group { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; flex-direction: column; }
-    label { font-size: 13px; font-weight: bold; color: #0a3622; margin-bottom: 5px; display: block; }
+    .form-group { margin-bottom: 15px; display: flex; flex-direction: column; }
+    label { font-size: 13px; font-weight: bold; color: #0a3622; margin-bottom: 5px; }
     input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
     .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
     .btn-simpan:hover { background: #1a5c3a; }
@@ -20,6 +19,7 @@
 </head>
 <body>
 
+  <!-- HANYA FORM INI, TANPA SIDEBAR ADMIN -->
   <div class="card">
     <h2>📝 Entri Biodata Siswa</h2>
     
@@ -52,30 +52,14 @@
         <input type="tel" id="inWa" placeholder="Contoh: 08123456789">
       </div>
       
-      <div class="form-group">
-        <label>Alamat (Opsional)</label>
-        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
-      </div>
-      
       <button type="submit" class="btn-simpan">Simpan Biodata</button>
     </form>
   </div>
 
-  <!-- Script untuk menyimpan (Sesuaikan dengan Firebase Anda jika ada) -->
   <script>
-    // CATATAN: Jika Anda punya script Firebase untuk menyimpan biodata, 
-    // letakkan di dalam fungsi simpanBiodata ini.
     function simpanBiodata(e) {
       e.preventDefault();
-      
-      // Contoh mengambil data dari form
-      const nama = document.getElementById("inNama").value;
-      const nis = document.getElementById("inNis").value;
-      const kelas = document.getElementById("inKelas").value;
-      
-      alert("Biodata atas nama " + nama + " berhasil disimpan! (Catatan: Sambungkan ke Firebase untuk menyimpan permanen)");
-      
-      // Reset form setelah simpan
+      alert("Biodata berhasil disimpan! (Sambungkan ke Firebase jika ingin permanen)");
       document.getElementById("formBiodata").reset();
     }
   </script>
