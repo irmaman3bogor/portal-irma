@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kehadiran Saya - Portal IRMA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    body { background-color: #f4f7f6; padding: 20px; color: #333; display: flex; justify-content: center; }
+
+    .container { width: 100%; max-width: 600px; }
+    .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; margin-bottom: 20px; font-size: 20px; }
+
+    .info-lokasi { background: #eaf2ed; border-left: 4px solid #0a3622; padding: 12px 15px; border-radius: 6px; font-size: 13px; margin-bottom: 20px; line-height: 1.5; color: #0a3622; }
+    
+    .status-box { text-align: center; padding: 15px; background: #fff8e1; border-radius: 8px; margin-bottom: 20px; border: 1px solid #ffe0b2; }
+    .status-box h4 { color: #f57f17; font-size: 14px; margin-bottom: 5px; }
+    .status-box p { font-size: 13px; color: #555; }
+
+    .btn-absen { width: 100%; padding: 14px; border: none; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; color: white; transition: 0.2s; margin-bottom: 10px; }
+    .btn-masuk { background-color: #27ae60; }
+    .btn-masuk:hover { background-color: #219653; }
+    .btn-pulang { background-color: #e67e22; }
+    .btn-pulang:hover { background-color: #d35400; }
+    .btn-absen:disabled { background-color: #bdc3c7; cursor: not-allowed; }
+
+    .riwayat-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 13px; }
+    .riwayat-table th, .riwayat-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+    .riwayat-table th { background-color: #0a3622; color: white; }
+    .badge { padding: 4px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; color: white; }
+    .badge-hadir { background-color: #27ae60; }
+    .badge-terlambat { background-color: #e74c3c; }
+  </style>
+
+  <!-- SCRIPT FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, doc, setDoc, getDoc, collection, query, where, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Koordinat MAN 3 Bogor (Jonggol)
+    const TARGET_LAT = -6.457952;
+    const TARGET_LNG = 107.055545;
+    const MAX_JARAK_METER = 150; // Toleransi radius 150 meter dari
