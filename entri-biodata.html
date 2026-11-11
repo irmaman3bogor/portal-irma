@@ -3,162 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Laporan Kegiatan - Portal IRMA</title>
+  <title>Entri Biodata - Portal IRMA</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
-    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f4f6f9; display: flex; height: 100vh; overflow: hidden; }
-
-    /* --- SIDEBAR --- */
-    .sidebar { width: 260px; background-color: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
-    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-header img { width: 60px; margin-bottom: 10px; }
-    .sidebar-header h2 { color: #d4af37; font-size: 18px; margin-bottom: 5px; }
-    .sidebar-header p { font-size: 11px; color: #ccc; }
-    .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
-    .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; border-left: 4px solid transparent; }
-    .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255,255,255,0.05); border-left-color: #d4af37; color: #d4af37; }
-    .sidebar-menu a span { margin-right: 15px; font-size: 16px; }
-
-    /* --- MAIN CONTENT --- */
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-    .top-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
-    .top-header h1 { font-size: 20px; color: #0a3622; }
-    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; }
+    /* CSS Polos untuk dalam Iframe */
+    body { font-family: 'Segoe UI', sans-serif; background: transparent; padding: 0; margin: 0; color: #333; }
+    .card { background: white; border-radius: 12px; padding: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    h2 { color: #0a3622; margin-top: 0; border-bottom: 2px solid #d4af37; padding-bottom: 10px; display: inline-block; margin-bottom: 20px; }
     
-    .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
-
-    /* --- KONTEN KEGIATAN (Dari Screenshot Anda) --- */
-    .content-body { padding: 30px; flex: 1; }
-    .card-form { background: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
-    .card-form h2 { color: #0a3622; margin-bottom: 20px; border-bottom: 3px solid #d4af37; display: inline-block; padding-bottom: 5px; }
-    
-    /* Style form dasar agar mirip screenshot */
-    .form-group { margin-bottom: 15px; }
-    .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px; }
-    .form-row { display: flex; gap: 15px; }
-    .form-row .form-group { flex: 1; }
-    .btn-submit { background: #0a3622; color: white; border: none; padding: 15px; width: 100%; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 16px; margin-top: 10px; }
-    .btn-submit:hover { background: #1a5c3a; }
-
-    /* --- TOMBOL KEMBALI --- */
-    .btn-kembali { background: #6c757d; color: white; padding: 8px 15px; border-radius: 6px; text-decoration: none; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
-    .btn-kembali:hover { background: #5a6268; }
-
-    /* --- RESPONSIF HP --- */
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; left: -260px; height: 100vh; }
-      .sidebar.open { left: 0; }
-      .menu-toggle { display: block; }
-      .top-header { padding: 15px 20px; }
-      .content-body { padding: 15px; }
-      .card-form { padding: 15px; }
-      .form-row { flex-direction: column; gap: 0; } /* Form tanggal & jam jadi atas bawah di HP */
-    }
+    /* Style Form */
+    .form-group { margin-bottom: 15px; display: flex; gap: 10px; flex-wrap: wrap; flex-direction: column; }
+    label { font-size: 13px; font-weight: bold; color: #0a3622; margin-bottom: 5px; display: block; }
+    input, select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; }
+    .btn-simpan { background: #0a3622; color: white; border: none; padding: 12px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; width: 100%; font-size: 16px; margin-top: 10px; }
+    .btn-simpan:hover { background: #1a5c3a; }
   </style>
 </head>
 <body>
 
-  <!-- SIDEBAR -->
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <img src="logo.png" alt="Logo IRMA">
-      <h2>PORTAL IRMA</h2>
-      <p>MAN 3 BOGOR</p>
-    </div>
-    <div class="sidebar-menu">
-      <a href="beranda.html"><span>🏠</span> Home</a>
-      <a href="profil.html"><span>📖</span> Profil IRMA</a>
-      <a href="informasi.html"><span>📢</span> Informasi</a>
-      <a href="keuangan.html"><span>💰</span> Keuangan</a>
-      <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
-      <a href="data-anggota.html"><span>👥</span> Data Anggota</a>
-      <!-- Menu Kegiatan di-set active -->
-      <a href="kegiatan.html" class="active"><span>📅</span> Kegiatan</a>
-      <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
-      <a href="bendahara.html"><span>📊</span> Sistem Akuntansi IRMA</a> 
-      <a href="daftar-anggota.html"><span>📋</span> Daftar Anggota IRMA</a>
-    </div>
-  </div>
-
-  <!-- MAIN CONTENT -->
-  <div class="main-content">
+  <div class="card">
+    <h2>📝 Entri Biodata Siswa</h2>
     
-    <!-- HEADER -->
-    <div class="top-header">
-      <div style="display: flex; align-items: center;">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <h1>Laporan Kegiatan</h1>
+    <form id="formBiodata" onsubmit="simpanBiodata(event)">
+      <div class="form-group">
+        <label>Nama Lengkap</label>
+        <input type="text" id="inNama" placeholder="Masukkan nama lengkap" required>
       </div>
-      <div style="display: flex; gap: 10px;">
-        <!-- TOMBOL KEMBALI DITAMBAHKAN DI SINI -->
-        <a href="beranda.html" class="btn-kembali">⬅️ Kembali</a>
-        <button onclick="logout()" class="btn-logout">Keluar</button>
-      </div>
-    </div>
-
-    <!-- ISI KONTEN -->
-    <div class="content-body">
       
-      <!-- KARTU INPUT LAPORAN -->
-      <div class="card-form">
-        <h2>📝 Input Laporan Kegiatan</h2>
-        
-        <!-- ⚠️ MASUKKAN KODE FORM ASLI ANDA DI SINI ⚠️ -->
-        <!-- Saya buatkan contoh tampilannya sesuai screenshot Anda -->
-        <form>
-          <div class="form-row">
-            <div class="form-group">
-              <input type="date" required>
-            </div>
-            <div class="form-group">
-              <input type="time" required>
-            </div>
-          </div>
-          <div class="form-group">
-            <input type="text" placeholder="Nama Kegiatan (Contoh: Kerja Bakti)" required>
-          </div>
-          <div class="form-group">
-            <textarea rows="4" placeholder="Deskripsi singkat kegiatan..." required></textarea>
-          </div>
-          <div class="form-group">
-            <input type="url" placeholder="Link Catatan Materi (Google Drive/Docs)">
-          </div>
-          <div class="form-group">
-            <label style="font-weight:bold; font-size:13px; margin-bottom:5px; display:block;">Upload Foto Kegiatan (Opsional)</label>
-            <input type="file" accept="image/*">
-          </div>
-          <button type="submit" class="btn-submit">Kirim Laporan</button>
-        </form>
-        <!-- ⚠️ BATAS KODE FORM ASLI ANDA ⚠️ -->
-
+      <div class="form-group">
+        <label>NIS</label>
+        <input type="text" id="inNis" placeholder="Masukkan NIS" required>
       </div>
-
-      <!-- KARTU RIWAYAT LAPORAN -->
-      <div class="card-form">
-        <h2>📋 Riwayat Laporan Kegiatan</h2>
-        <!-- ⚠️ MASUKKAN TABEL/LIST RIWAYAT DARI FIREBASE ANDA DI SINI ⚠️ -->
-        <p style="color: #666; text-align:center; padding: 20px;">(Data riwayat kegiatan akan muncul di sini)</p>
+      
+      <div class="form-group">
+        <label>Kelas / Jurusan</label>
+        <select id="inKelas" required>
+          <option value="">-- Pilih Kelas --</option>
+          <option value="10 - IPS">10 - IPS</option>
+          <option value="10 - Keagamaan">10 - Keagamaan</option>
+          <option value="11 - IPS">11 - IPS</option>
+          <option value="11 - Keagamaan">11 - Keagamaan</option>
+          <option value="12 - IPS">12 - IPS</option>
+          <option value="12 - Keagamaan">12 - Keagamaan</option>
+        </select>
       </div>
-
-    </div>
-
+      
+      <div class="form-group">
+        <label>Nomor WhatsApp (Opsional)</label>
+        <input type="tel" id="inWa" placeholder="Contoh: 08123456789">
+      </div>
+      
+      <div class="form-group">
+        <label>Alamat (Opsional)</label>
+        <textarea id="inAlamat" rows="3" placeholder="Masukkan alamat lengkap"></textarea>
+      </div>
+      
+      <button type="submit" class="btn-simpan">Simpan Biodata</button>
+    </form>
   </div>
 
+  <!-- Script untuk menyimpan (Sesuaikan dengan Firebase Anda jika ada) -->
   <script>
-    // Proteksi Login
-    if (localStorage.getItem("irmaLogin") !== "true") {
-      window.location.href = "index.html";
-    }
-    function logout() {
-      if (confirm("Yakin ingin keluar dari Portal IRMA?")) {
-        localStorage.removeItem("irmaLogin");
-        localStorage.removeItem("userLoginData");
-        window.location.href = "index.html";
-      }
-    }
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("open");
+    // CATATAN: Jika Anda punya script Firebase untuk menyimpan biodata, 
+    // letakkan di dalam fungsi simpanBiodata ini.
+    function simpanBiodata(e) {
+      e.preventDefault();
+      
+      // Contoh mengambil data dari form
+      const nama = document.getElementById("inNama").value;
+      const nis = document.getElementById("inNis").value;
+      const kelas = document.getElementById("inKelas").value;
+      
+      alert("Biodata atas nama " + nama + " berhasil disimpan! (Catatan: Sambungkan ke Firebase untuk menyimpan permanen)");
+      
+      // Reset form setelah simpan
+      document.getElementById("formBiodata").reset();
     }
   </script>
 </body>
