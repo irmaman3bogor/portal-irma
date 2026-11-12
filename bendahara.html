@@ -58,14 +58,17 @@
     .btn-tambah { background: #2a9d8f; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .btn-tambah:hover { background: #21867a; }
 
-    /* MODAL POPUP TAMBAH SISWA */
+    .btn-hapus-siswa { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer; }
+    .btn-hapus-siswa:hover { background: #c0392b; }
+
+    /* MODAL POPUP */
     .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
     .modal-content h3 { color: #0077b6; margin-top: 0; border-bottom: 2px solid #f4f6f9; padding-bottom: 8px; }
 
     /* TABEL */
     .table-responsive { overflow-x: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 700px; }
     th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
     th { background: #f8f9fa; color: #0077b6; font-weight: 700; text-align: center; }
     td { text-align: left; }
@@ -94,7 +97,7 @@
 
     @media print {
       body { background: white; padding: 0; }
-      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-tambah { display: none; }
+      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-tambah, .btn-hapus-siswa { display: none; }
       .container { max-width: 100%; }
       .tab-content { display: block !important; }
       .box { box-shadow: none; border: 1px solid #ccc; }
@@ -194,7 +197,15 @@
           <h3>Jurnal Umum Organisasi</h3>
           <div class="table-responsive">
             <table>
-              <thead><tr><th>Tanggal</th><th>Keterangan</th><th>Akun (Kode)</th><th>Nominal</th><th>Aksi</th></tr></thead>
+              <thead>
+                <tr>
+                  <th>Tanggal</th>
+                  <th>Keterangan & Akun</th>
+                  <th class="text-center">Debet (Rp)</th>
+                  <th class="text-center">Kredit (Rp)</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
               <tbody id="tabelJurnalBody"><tr><td colspan="5" style="text-align:center;">Memuat data...</td></tr></tbody>
             </table>
           </div>
@@ -220,10 +231,11 @@
                 <th style="width: 70px;">Kelas</th>
                 <th>Juli</th><th>Agustus</th><th>September</th><th>Oktober</th><th>November</th><th>Desember</th>
                 <th>Januari</th><th>Februari</th><th>Maret</th><th>April</th><th>Mei</th><th>Juni</th>
+                <th style="width: 80px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelKelas10Body">
-              <tr><td colspan="16" class="text-center">Memuat data siswa kelas X...</td></tr>
+              <tr><td colspan="17" class="text-center">Memuat data siswa kelas X...</td></tr>
             </tbody>
           </table>
         </div>
@@ -248,10 +260,11 @@
                 <th style="width: 70px;">Kelas</th>
                 <th>Juli</th><th>Agustus</th><th>September</th><th>Oktober</th><th>November</th><th>Desember</th>
                 <th>Januari</th><th>Februari</th><th>Maret</th><th>April</th><th>Mei</th><th>Juni</th>
+                <th style="width: 80px;">Aksi</th>
               </tr>
             </thead>
             <tbody id="tabelKelas11Body">
-              <tr><td colspan="16" class="text-center">Memuat data siswa kelas XI...</td></tr>
+              <tr><td colspan="17" class="text-center">Memuat data siswa kelas XI...</td></tr>
             </tbody>
           </table>
         </div>
@@ -430,9 +443,22 @@
         document.getElementById("inputNisn").value = "";
         document.getElementById("inputNama").value = "";
         document.getElementById("inputKelas").value = "";
-        muatDataKas(); // Refresh tabel kas
+        muatDataKas();
       } catch (err) {
         alert("❌ Gagal menambahkan siswa: " + err.message);
+      }
+    }
+
+    window.hapusSiswa = async function(siswaId, namaSiswa) {
+      if (!confirm(`⚠️ Apakah Anda yakin ingin menghapus data siswa "${namaSiswa}" dari daftar iuran?`)) return;
+      try {
+        const { doc, deleteDoc } = window.fbTools;
+        await deleteDoc(doc(window.db, "biodata_siswa", siswaId));
+        try { await deleteDoc(doc(window.db, "AnggotaIRMA", siswaId)); } catch(e){}
+        alert("✅ Data siswa berhasil dihapus!");
+        muatDataKas();
+      } catch (error) {
+        alert("❌ Gagal menghapus siswa: " + error.message);
       }
     }
 
@@ -527,8 +553,11 @@
           
           try {
             let siswaSnap = await getDocs(collection(window.db, "biodata_siswa"));
-            if (siswaSnap.empty) {
-              siswaSnap = await getDocs(collection(window.db, "AnggotaIRMA"));
+            let allDocs = siswaSnap.docs;
+            
+            if (allDocs.length === 0) {
+              const altSnap = await getDocs(collection(window.db, "AnggotaIRMA"));
+              allDocs = altSnap.docs;
             }
 
             const tbody10 = document.getElementById("tabelKelas10Body");
@@ -540,14 +569,14 @@
             let no10 = 1, no11 = 1;
             let totalNominalIuranSiswa = 0;
 
-            if (siswaSnap.empty) {
-              tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
-              tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Belum ada data siswa di database.</td></tr>`;
+            if (allDocs.length === 0) {
+              tbody10.innerHTML = `<tr><td colspan="17" class="text-center">Belum ada data siswa di database.</td></tr>`;
+              tbody11.innerHTML = `<tr><td colspan="17" class="text-center">Belum ada data siswa di database.</td></tr>`;
               if (typeof totalIuranCallback === 'function') totalIuranCallback(0);
               return;
             }
 
-            for (const docSiswa of siswaSnap.docs) {
+            for (const docSiswa of allDocs) {
               const siswa = docSiswa.data();
               const siswaId = docSiswa.id;
               
@@ -556,10 +585,8 @@
               const nisnSiswa = siswa.nisn || siswa.NISN || siswa.nis || siswa.noId || "-";
               const kelasStr = String(kelasSiswa).trim().toUpperCase();
 
-              // Klasifikasi Kelas 11: mengandung "XI" atau berawalan "11"
               const isKelas11 = kelasStr.includes("XI") || kelasStr.startsWith("11");
 
-              // Ambil data iuran siswa
               const iuranSnap = await getDoc(doc(window.db, "iuran_bulanan", siswaId));
               const iuranData = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
               const statusBulan = iuranData.bulan || {};
@@ -578,6 +605,12 @@
                 htmlTD += `<td class="text-center"><input type="checkbox" class="checkbox-iuran" ${isChecked} onchange="updateIuranSiswa('${siswaId}', '${bulan}', this.checked)"></td>`;
               });
 
+              htmlTD += `
+                <td class="text-center">
+                  <button class="btn-hapus-siswa" onclick="hapusSiswa('${siswaId}', '${namaSiswa.replace(/'/g, "")}')">Hapus</button>
+                </td>
+              `;
+
               tr.innerHTML = htmlTD;
 
               if (!isKelas11) {
@@ -589,8 +622,8 @@
               }
             }
 
-            if (tbody10.innerHTML === "") tbody10.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas X.</td></tr>`;
-            if (tbody11.innerHTML === "") tbody11.innerHTML = `<tr><td colspan="16" class="text-center">Tidak ada siswa Kelas XI.</td></tr>`;
+            if (tbody10.innerHTML === "") tbody10.innerHTML = `<tr><td colspan="17" class="text-center">Tidak ada siswa Kelas X.</td></tr>`;
+            if (tbody11.innerHTML === "") tbody11.innerHTML = `<tr><td colspan="17" class="text-center">Tidak ada siswa Kelas XI.</td></tr>`;
 
             if (typeof totalIuranCallback === 'function') {
               totalIuranCallback(totalNominalIuranSiswa);
@@ -602,7 +635,6 @@
       }, 300);
     }
 
-    // EVENT SAAT CHECKBOX IURAN DIKLIK
     window.updateIuranSiswa = async function(siswaId, bulan, isChecked) {
       const { doc, getDoc, setDoc } = window.fbTools;
       const iuranRef = doc(window.db, "iuran_bulanan", siswaId);
@@ -662,15 +694,34 @@
                   else if (post === "Utang") { totalUtang += nom; recapUtang[kat] = (recapUtang[kat] || 0) + nom; }
                   else if (post === "Modal") { totalModal += nom; }
 
-                  const isPlus = (post === "Pendapatan" || post === "Utang" || post === "Modal");
-                  const color = isPlus ? "#2a9d8f" : "#e76f51";
+                  // Penentuan Otomatis Posisi Debet & Kredit
+                  let debetStr = "-";
+                  let kreditStr = "-";
+                  let badgeClass = "badge-in";
+
+                  if (post === "Pendapatan" || post === "Modal") {
+                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#2a9d8f; font-weight:600;">Kas (111)</small>`;
+                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">${kat}</small>`;
+                    badgeClass = "badge-in";
+                  } else if (post === "Beban" || post === "Aset") {
+                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#e76f51; font-weight:600;">${kat}</small>`;
+                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">Kas (111)</small>`;
+                    badgeClass = "badge-out";
+                  } else if (post === "Utang") {
+                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#2a9d8f; font-weight:600;">${kat}</small>`;
+                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">Utang Usaha (211)</small>`;
+                    badgeClass = "badge-in";
+                  }
 
                   htmlJurnal = `
                     <tr>
                       <td>${data.tanggal || '-'}</td>
-                      <td>${data.keterangan || '-'}</td>
-                      <td><span class="badge ${isPlus ? 'badge-in' : 'badge-out'}">${kat}</span></td>
-                      <td style="font-weight:600; color: ${color};">Rp ${nom.toLocaleString("id-ID")}</td>
+                      <td>
+                        <strong>${data.keterangan || '-'}</strong><br>
+                        <span class="badge ${badgeClass}">${post}</span>
+                      </td>
+                      <td class="text-center" style="font-size:12px;">${debetStr}</td>
+                      <td class="text-center" style="font-size:12px;">${kreditStr}</td>
                       <td>
                         <button class="action-btn btn-edit" onclick="editData('${doc.id}', '${post}', '${kat}', ${nom}, '${data.keterangan}')">Edit</button>
                         <button class="action-btn btn-delete" onclick="hapusData('${doc.id}')">Hapus</button>
