@@ -46,7 +46,7 @@
     @media (max-width: 850px) { .main-grid { grid-template-columns: 1fr; } }
     
     .box { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow-x: auto; }
-    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; }
+    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
     
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #555; }
@@ -55,6 +55,14 @@
     .btn-submit:hover { background: #005f8a; }
     .btn-cancel { background: #e76f51; margin-top: 5px; display: none; }
     
+    .btn-tambah { background: #2a9d8f; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
+    .btn-tambah:hover { background: #21867a; }
+
+    /* MODAL POPUP TAMBAH SISWA */
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+    .modal-content h3 { color: #0077b6; margin-top: 0; border-bottom: 2px solid #f4f6f9; padding-bottom: 8px; }
+
     /* TABEL */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 600px; }
@@ -86,7 +94,7 @@
 
     @media print {
       body { background: white; padding: 0; }
-      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout { display: none; }
+      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-tambah { display: none; }
       .container { max-width: 100%; }
       .tab-content { display: block !important; }
       .box { box-shadow: none; border: 1px solid #ccc; }
@@ -197,7 +205,10 @@
     <!-- TAB KELAS X -->
     <div id="tabKelas10" class="tab-content">
       <div class="box">
-        <h3>📋 Rekap Iuran Kas Bulanan - Anggota Kelas X (Rp 10.000/bln)</h3>
+        <h3>
+          <span>📋 Rekap Iuran Kas Bulanan - Kelas X</span>
+          <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+        </h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
         <div class="table-responsive">
           <table>
@@ -222,7 +233,10 @@
     <!-- TAB KELAS XI -->
     <div id="tabKelas11" class="tab-content">
       <div class="box">
-        <h3>📋 Rekap Iuran Kas Bulanan - Anggota Kelas XI (Rp 10.000/bln)</h3>
+        <h3>
+          <span>📋 Rekap Iuran Kas Bulanan - Kelas XI</span>
+          <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+        </h3>
         <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
         <div class="table-responsive">
           <table>
@@ -345,6 +359,29 @@
 
   </div>
 
+  <!-- MODAL FORM TAMBAH SISWA -->
+  <div id="modalTambahSiswa" class="modal">
+    <div class="modal-content">
+      <h3>➕ Tambah Anggota / Siswa Baru</h3>
+      <form onsubmit="simpanSiswaBaru(event)">
+        <div class="form-group">
+          <label>NISN / NIS</label>
+          <input type="text" id="inputNisn" placeholder="Contoh: 106675269" required />
+        </div>
+        <div class="form-group">
+          <label>Nama Lengkap Siswa</label>
+          <input type="text" id="inputNama" placeholder="Contoh: Ahmad Fauzan" required />
+        </div>
+        <div class="form-group">
+          <label>Kelas (Contoh: X9, X10, XI.1, dll)</label>
+          <input type="text" id="inputKelas" placeholder="Contoh: X9 atau XI.2" required />
+        </div>
+        <button type="submit" class="btn-submit">Simpan Siswa</button>
+        <button type="button" class="btn-submit btn-cancel" style="display:block; background:#7f8c8d; margin-top:8px;" onclick="tutupModalSiswa()">Batal</button>
+      </form>
+    </div>
+  </div>
+
   <script>
     let chartInstance = null;
     const NOMINAL_IURAN = 10000;
@@ -363,6 +400,40 @@
       document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
       document.getElementById(tabId).classList.add('active');
       event.currentTarget.classList.add('active');
+    }
+
+    function bukaModalSiswa() {
+      document.getElementById("modalTambahSiswa").style.display = "flex";
+    }
+
+    function tutupModalSiswa() {
+      document.getElementById("modalTambahSiswa").style.display = "none";
+    }
+
+    async function simpanSiswaBaru(e) {
+      e.preventDefault();
+      const nisn = document.getElementById("inputNisn").value.trim();
+      const nama = document.getElementById("inputNama").value.trim();
+      const kelas = document.getElementById("inputKelas").value.trim();
+
+      try {
+        const { collection, addDoc } = window.fbTools;
+        await addDoc(collection(window.db, "biodata_siswa"), {
+          nisn: nisn,
+          nama: nama,
+          kelas: kelas,
+          jabatan: "Anggota IRMA",
+          waktu: new Date().toISOString()
+        });
+        alert("✅ Siswa baru berhasil ditambahkan!");
+        tutupModalSiswa();
+        document.getElementById("inputNisn").value = "";
+        document.getElementById("inputNama").value = "";
+        document.getElementById("inputKelas").value = "";
+        muatDataKas(); // Refresh tabel kas
+      } catch (err) {
+        alert("❌ Gagal menambahkan siswa: " + err.message);
+      }
     }
 
     function updateKategoriOptions() {
@@ -447,7 +518,7 @@
       }
     }
 
-    // FUNGSI MEMUAT DATA SISWA & REKAP IURAN (Filter Kelas X & XI yang disempurnakan)
+    // FUNGSI MEMUAT DATA SISWA & REKAP IURAN
     async function muatDataSiswaIuran(totalIuranCallback) {
       const checkReady = setInterval(async () => {
         if (window.db && window.fbTools) {
@@ -485,7 +556,7 @@
               const nisnSiswa = siswa.nisn || siswa.NISN || siswa.nis || siswa.noId || "-";
               const kelasStr = String(kelasSiswa).trim().toUpperCase();
 
-              // Klasifikasi akurat: Kelas 11 adalah yang mengandung "XI" atau berawalan "11"
+              // Klasifikasi Kelas 11: mengandung "XI" atau berawalan "11"
               const isKelas11 = kelasStr.includes("XI") || kelasStr.startsWith("11");
 
               // Ambil data iuran siswa
@@ -544,7 +615,7 @@
         data.updatedAt = new Date().toISOString();
 
         await setDoc(iuranRef, data, { merge: true });
-        muatDataKas(); // Refresh ulang laporan keuangan & tabel iuran
+        muatDataKas();
       } catch (error) {
         alert("Gagal memperbarui iuran: " + error.message);
       }
