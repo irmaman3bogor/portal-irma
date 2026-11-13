@@ -201,6 +201,20 @@
         window.location.href = "index.html";
       }
     }
+    // TAMBAHKAN KODE INI DI DALAM TAG <script type="module"> di beranda-siswa.html
+window.addEventListener("message", function(event) {
+  if (event.data === 'tutup-iframe') {
+    // Sembunyikan iframe dan tampilkan kembali kotak sambutan (welcomeBox)
+    document.getElementById('contentFrame').style.display = 'none';
+    document.getElementById('contentFrame').src = "";
+    document.getElementById('welcomeBox').style.display = 'block';
+    document.getElementById('pageTitle').innerText = "Home";
+    
+    // Reset menu aktif ke "Home"
+    document.querySelectorAll('.menu-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.menu-item')[0].classList.add('active');
+  }
+});
   </script>
 </body>
 </html>
