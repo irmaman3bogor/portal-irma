@@ -34,11 +34,12 @@
     /* LOADING & ERROR */
     .loading { text-align: center; padding: 40px; color: #777; font-style: italic; }
     .error-box { background: #ffebee; color: #c62828; padding: 20px; border-radius: 8px; text-align: center; }
+    .debug-box { margin-top: 20px; padding: 15px; background: #fff3cd; border: 1px solid #ffeeba; border-radius: 8px; font-size: 12px; color: #856404; display: none; }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -51,38 +52,30 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Daftar Bulan sesuai dengan bendahara.html
     const bulanList = ["juli", "agustus", "september", "oktober", "november", "desember", "januari", "februari", "maret", "april", "mei", "juni"];
 
     window.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("tabelKas");
+      const debugBox = document.getElementById("debugInfo");
       
-      // Ambil UID Siswa dari localStorage
+      // Ambil data login
+      const userLoginStr = localStorage.getItem("userLoginData");
       const uidSiswa = localStorage.getItem("irmaUserId");
-      // Ambil NIS dari localStorage (karena di index.html kita simpan input sebagai nis)
-      const nisSiswa = localStorage.getItem("userLoginData") ? JSON.parse(localStorage.getItem("userLoginData")).nis : null;
 
-      if (!uidSiswa && !nisSiswa) {
+      if (!userLoginStr && !uidSiswa) {
         container.innerHTML = `<div class="error-box">Sesi login tidak ditemukan. Silakan login ulang.</div>`;
         return;
       }
+
+      let userLogin = userLoginStr ? JSON.parse(userLoginStr) : {};
+      let nisLogin = userLogin.nis || ""; // NIS yang dipakai login
 
       try {
         let dataSiswa = null;
         let siswaId = null;
 
-        // 1. CARI DATA SISWA BERDASARKAN NIS (Karena di bendahara.html NISN yang diinput)
-        if (nisSiswa) {
-          const qSiswa = query(collection(db, "biodata_siswa"), where("nisn", "==", nisSiswa));
-          const snapSiswa = await getDocs(qSiswa);
-          if (!snapSiswa.empty) {
-            dataSiswa = snapSiswa.docs[0].data();
-            siswaId = snapSiswa.docs[0].id;
-          }
-        }
-
-        // Jika tidak ketemu berdasarkan NIS, coba cari berdasarkan UID
-        if (!dataSiswa && uidSiswa) {
+        // STRATEGI 1: Cari berdasarkan UID (Jika data disimpan pakai UID Auth)
+        if (uidSiswa) {
           const docRef = doc(db, "biodata_siswa", uidSiswa);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
@@ -91,14 +84,41 @@
           }
         }
 
+        // STRATEGI 2: Jika gagal, ambil SEMUA siswa dan cocokkan manual NIS/namanya
         if (!dataSiswa) {
-          container.innerHTML = `<div class="error-box">Data siswa tidak ditemukan. Pastikan NISN Anda sudah didaftarkan oleh Bendahara di menu Kas Kelas.</div>`;
+          const snapAll = await getDocs(collection(db, "biodata_siswa"));
+          
+          snapAll.forEach(d => {
+            if (dataSiswa) return; // Jika sudah ketemu, stop loop
+            
+            const data = d.data();
+            // Ambil NISN dari database (bisa field 'nisn' atau 'nis')
+            let nisnDB = String(data.nisn || data.nis || "").trim();
+            let nisLoginStr = String(nisLogin).trim();
+
+            // Cocokkan persis, atau cocokkan jika salah satu mengandung yang lain
+            if (nisnDB !== "" && (nisnDB === nisLoginStr || nisnDB.includes(nisLoginStr) || nisLoginStr.includes(nisnDB))) {
+              dataSiswa = data;
+              siswaId = d.id;
+            }
+          });
+        }
+
+        // Tampilkan info debug jika masih gagal
+        if (!dataSiswa) {
+          debugBox.style.display = "block";
+          debugBox.innerHTML = `
+            <strong>⚠️ Info Debug (Buka untuk Bendahara):</strong><br>
+            Sistem tidak menemukan siswa dengan NIS Login: <b>"${nisLogin}"</b>.<br>
+            Pastikan NIS ini sama dengan yang diinput di menu <b>Kas Kelas</b> oleh Bendahara.
+          `;
+          container.innerHTML = `<div class="error-box">Data siswa tidak ditemukan di database. Pastikan NISN/NIS Anda sudah didaftarkan oleh Bendahara di menu Kas Kelas.</div>`;
           return;
         }
 
         const namaSiswa = dataSiswa.nama || "Siswa";
 
-        // 2. AMBIL DATA IURAN BERDASARKAN ID SISWA (sesuai struktur bendahara.html)
+        // AMBIL DATA IURAN
         const iuranRef = doc(db, "iuran_bulanan", siswaId);
         const iuranSnap = await getDoc(iuranRef);
         
@@ -137,7 +157,6 @@
           const statusClass = sudahBayar ? 'lunas' : 'belum';
           const statusText = sudahBayar ? 'Lunas' : 'Belum Bayar';
           
-          // Buat huruf depan bulan jadi kapital
           const namaBulan = bulan.charAt(0).toUpperCase() + bulan.slice(1);
 
           html += `
@@ -183,6 +202,9 @@
   <div class="table-container" id="tabelKas">
     <div class="loading">Memuat data kas Anda...</div>
   </div>
+
+  <!-- KOTAK DEBUG UNTUK BANTUAN -->
+  <div id="debugInfo" class="debug-box"></div>
 
 </body>
 </html>
