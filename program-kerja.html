@@ -20,6 +20,31 @@
       color: var(--text-color);
     }
 
+    /* TOMBOL KEMBALI DI ATAS */
+    .top-nav {
+      max-width: 1000px;
+      margin: 0 auto 15px auto;
+    }
+    
+    .btn-kembali {
+      background: #6c757d;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.2s;
+    }
+    
+    .btn-kembali:hover {
+      background: #5a6268;
+    }
+
     .container {
       max-width: 1000px;
       margin: 0 auto;
@@ -97,6 +122,11 @@
   </style>
 </head>
 <body>
+
+  <!-- TOMBOL KEMBALI (SUDAH DIPINDAH KE PALING ATAS) -->
+  <div class="top-nav">
+    <button onclick="kembaliKeBeranda()" class="btn-kembali">← Kembali ke Beranda</button>
+  </div>
 
   <div class="container">
     <div class="header">
@@ -228,12 +258,19 @@
     </div>
 
   </div>
-<!-- TOMBOL KEMBALI -->
-<div style="max-width: 900px; margin: 20px auto 0; padding: 0 20px;">
-  <button onclick="window.parent.postMessage('tutup-iframe', '*')" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;">
-    ← Kembali ke Beranda
-  </button>
-</div>
-  
+
+  <!-- SCRIPT UNTUK TOMBOL KEMBALI -->
+  <script>
+    function kembaliKeBeranda() {
+      // Jika halaman dimuat di dalam iframe (beranda-siswa)
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage('tutup-iframe', '*');
+      } else {
+        // Jika dibuka langsung tanpa iframe, arahkan ke beranda
+        window.location.href = 'beranda-siswa.html';
+      }
+    }
+  </script>
+
 </body>
 </html>
