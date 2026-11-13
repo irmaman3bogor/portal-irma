@@ -3,51 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kelola Informasi - Admin IRMA MAN 3 Bogor</title>
+  <title>Informasi - Portal IRMA</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
-    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-    body { background-color: #f4f6f9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-    
-    .sidebar { width: 260px; background-color: #0b3c29; color: white; display: flex; flex-direction: column; padding: 20px 0; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
-    .sidebar-logo { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-logo img { width: 50px; height: 50px; object-fit: contain; }
-    .sidebar-logo h3 { margin: 10px 0 2px; font-size: 16px; color: #ffb703; }
-    .sidebar-logo p { margin: 0; font-size: 11px; color: #adb5bd; }
-    .menu-list { list-style: none; padding: 0; margin: 20px 0; overflow-y: auto; flex-grow: 1; }
-    .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #adb5bd; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
-    .menu-item.active a, .menu-item a:hover { background-color: rgba(255,255,255,0.1); color: white; border-left: 4px solid #ffb703; }
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Poppins', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
 
-    .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
-    .topbar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    .topbar h2 { margin: 0; color: #0b3c29; font-size: 18px; }
-    .btn-keluar { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+    /* HEADER KECIL */
+    .page-header { margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; }
+    .page-header h2 { color: #0a3622; font-size: 22px; display: flex; align-items: center; gap: 10px; }
+    .page-header p { color: #666; font-size: 14px; margin-top: 5px; }
 
-    .content-body { padding: 30px; max-width: 900px; width: 100%; margin: 0 auto; }
-    .btn-tambah-berita { background: #2a9d8f; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    /* KARTU BERITA */
+    .news-grid { display: grid; gap: 20px; }
+    .news-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border-left: 5px solid #d4af37; display: flex; flex-direction: column; }
+    .news-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 15px; }
+    .news-title { margin: 0; color: #0a3622; font-size: 18px; font-weight: 700; line-height: 1.4; }
+    .news-date { font-size: 11px; color: #666; background: #f0f0f0; padding: 5px 10px; border-radius: 6px; white-space: nowrap; font-weight: 600; }
+    .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.7; white-space: pre-line; }
+    .news-footer { padding: 12px 20px; background: #fafafa; border-top: 1px solid #eee; font-size: 12px; color: #777; display: flex; align-items: center; gap: 5px; }
+    .news-footer strong { color: #0a3622; }
 
-    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; }
-    .modal-content h3 { color: #0b3c29; margin-top: 0; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
-    .form-group { margin-bottom: 15px; }
-    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; }
-    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    .btn-submit { background: #0b3c29; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; width: 100%; cursor: pointer; }
-    .btn-batal { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: 600; }
-
-    .news-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
-    .news-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #0b3c29; }
-    .news-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; }
-    .news-title { margin: 0; color: #0b3c29; font-size: 18px; font-weight: 700; }
-    .news-date { font-size: 11px; color: #777; background: #e9ecef; padding: 4px 8px; border-radius: 4px; }
-    .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; }
-    .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
-    .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+    /* TAMPILAN JIKA KOSONG / LOADING */
+    .empty-state { background: white; padding: 40px 20px; text-align: center; border-radius: 12px; color: #777; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+    .loading-state { text-align: center; padding: 30px; color: #777; font-style: italic; }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -60,35 +44,19 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    window.addEventListener("DOMContentLoaded", () => { muatBerita(); });
-
-    window.bukaModalBerita = () => { document.getElementById("modalBerita").style.display = "flex"; }
-    window.tutupModalBerita = () => { document.getElementById("modalBerita").style.display = "none"; }
-
-    window.simpanBeritaBaru = async function(e) {
-      e.preventDefault();
+    window.addEventListener("DOMContentLoaded", async () => {
+      const container = document.getElementById("daftarBeritaSiswa");
+      
       try {
-        await addDoc(collection(db, "informasi_irma"), {
-          judul: document.getElementById("inputJudul").value,
-          isi: document.getElementById("inputIsi").value,
-          penulis: document.getElementById("inputPenulis").value || "Pengurus / Pembina IRMA",
-          waktu: serverTimestamp(),
-          tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
-        });
-        alert("✅ Berita berhasil diposting!");
-        tutupModalBerita();
-        document.getElementById("formBerita").reset();
-        muatBerita();
-      } catch (err) { alert("❌ Gagal: " + err.message); }
-    }
-
-    async function muatBerita() {
-      const container = document.getElementById("daftarInformasi");
-      container.innerHTML = `<p style="text-align:center; color:#777;">Memuat...</p>`;
-      try {
+        // Ambil semua berita, urutkan dari yang terbaru
         const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"));
         const snap = await getDocs(q);
-        if (snap.empty) { container.innerHTML = `<div style="background:white; padding:30px; text-align:center; border-radius:12px;">Belum ada berita.</div>`; return; }
+        
+        if (snap.empty) {
+          container.innerHTML = `<div class="empty-state">Belum ada pengumuman atau berita yang diposting oleh pengurus.</div>`;
+          return;
+        }
+
         let html = "";
         snap.forEach((d) => {
           const item = d.data();
@@ -100,68 +68,31 @@
               </div>
               <div class="news-content">${item.isi}</div>
               <div class="news-footer">
-                <span>👤 Oleh: <strong>${item.penulis}</strong></span>
-                <button class="btn-hapus" onclick="hapusPosting('${d.id}')">Hapus</button>
+                <span>👤 Diposting oleh: <strong>${item.penulis}</strong></span>
               </div>
             </div>`;
         });
         container.innerHTML = html;
-      } catch (err) { container.innerHTML = `<p style="color:red;">Gagal memuat.</p>`; }
-    }
 
-    window.hapusPosting = async function(id) {
-      if (!confirm("⚠️ Yakin hapus berita ini?")) return;
-      try { await deleteDoc(doc(db, "informasi_irma", id)); muatBerita(); }
-      catch (err) { alert("❌ Gagal: " + err.message); }
-    }
+      } catch (err) {
+        console.error("Error Firebase:", err);
+        container.innerHTML = `<div class="empty-state" style="color:#e74c3c;">Gagal memuat data informasi. Silakan periksa koneksi internet Anda.</div>`;
+      }
+    });
   </script>
 </head>
 <body>
-  <div class="sidebar">
-    <div class="sidebar-logo">
-      <img src="logo.png" alt="Logo">
-      <h3>PORTAL IRMA</h3>
-      <p>MAN 3 BOGOR</p>
-    </div>
-    <ul class="menu-list">
-      <li class="menu-item"><a href="bendahara.html">🏠 Dashboard</a></li>
-      <li class="menu-item active"><a href="admin-informasi.html">📢 Kelola Informasi</a></li>
-      <li class="menu-item"><a href="admin-kegiatan.html">📅 Kelola Kegiatan</a></li>
-    </ul>
+
+  <!-- HEADER KONTEN -->
+  <div class="page-header">
+    <h2>📢 Informasi & Pengumuman</h2>
+    <p>Dapatkan update terbaru seputar kegiatan dan pengumuman resmi IRMA MAN 3 Bogor.</p>
   </div>
 
-  <div class="main-content">
-    <div class="topbar">
-      <h2>📢 Panel Kelola Informasi (Admin)</h2>
-      <button onclick="localStorage.clear(); window.location.href='index.html';" class="btn-keluar">Keluar</button>
-    </div>
-
-    <div class="content-body">
-      <button class="btn-tambah-berita" onclick="bukaModalBerita()">+ Buat Informasi Baru</button>
-      <div id="daftarInformasi" class="news-grid"></div>
-    </div>
+  <!-- TEMPAT DAFTAR BERITA DIMUAT -->
+  <div id="daftarBeritaSiswa" class="news-grid">
+    <div class="loading-state">Memuat informasi terbaru...</div>
   </div>
 
-  <div id="modalBerita" class="modal">
-    <div class="modal-content">
-      <h3>Tambah Berita Baru</h3>
-      <form id="formBerita" onsubmit="simpanBeritaBaru(event)">
-        <div class="form-group">
-          <label>Judul</label>
-          <input type="text" id="inputJudul" required />
-        </div>
-        <div class="form-group">
-          <label>Penulis</label>
-          <input type="text" id="inputPenulis" value="Pembina / Pengurus IRMA" required />
-        </div>
-        <div class="form-group">
-          <label>Isi Berita</label>
-          <textarea id="inputIsi" rows="5" required></textarea>
-        </div>
-        <button type="submit" class="btn-submit">🚀 Publikasikan</button>
-        <button type="button" class="btn-batal" onclick="tutupModalBerita()">Batal</button>
-      </form>
-    </div>
-  </div>
 </body>
 </html>
