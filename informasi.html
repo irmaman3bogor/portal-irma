@@ -3,16 +3,17 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Informasi - Portal IRMA</title>
+  <title>Informasi & Pengumuman - Portal IRMA</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Poppins', sans-serif; background: #f4f7f6; padding: 20px; color: #333; }
 
-    /* HEADER KECIL */
-    .page-header { margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; }
-    .page-header h2 { color: #0a3622; font-size: 22px; display: flex; align-items: center; gap: 10px; }
-    .page-header p { color: #666; font-size: 14px; margin-top: 5px; }
+    /* HEADER POLOS */
+    .page-header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; }
+    .btn-kembali { background: #6c757d; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 13px; font-weight: 600; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
+    .btn-kembali:hover { background: #5a6268; }
+    .page-header h2 { color: #0a3622; font-size: 22px; }
 
     /* KARTU BERITA */
     .news-grid { display: grid; gap: 20px; }
@@ -44,16 +45,27 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    // Fungsi Tombol Kembali
+    window.tutupInformasi = function() {
+      // Cek apakah halaman ini berjalan di dalam iframe
+      if (window.parent && window.parent !== window) {
+        // Jika iya, kirim pesan ke parent (beranda-siswa.html) untuk menutup iframe
+        window.parent.postMessage('tutup-iframe', '*');
+      } else {
+        // Jika dibuka langsung, lempar ke beranda-siswa.html
+        window.location.href = 'beranda-siswa.html';
+      }
+    }
+
     window.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("daftarBeritaSiswa");
       
       try {
-        // Ambil semua berita, urutkan dari yang terbaru
         const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"));
         const snap = await getDocs(q);
         
         if (snap.empty) {
-          container.innerHTML = `<div class="empty-state">Belum ada pengumuman atau berita yang diposting oleh pengurus.</div>`;
+          container.innerHTML = `<div class="empty-state">Belum ada pengumuman atau berita yang diposting.</div>`;
           return;
         }
 
@@ -76,20 +88,20 @@
 
       } catch (err) {
         console.error("Error Firebase:", err);
-        container.innerHTML = `<div class="empty-state" style="color:#e74c3c;">Gagal memuat data informasi. Silakan periksa koneksi internet Anda.</div>`;
+        container.innerHTML = `<div class="empty-state" style="color:#e74c3c;">Gagal memuat data informasi.</div>`;
       }
     });
   </script>
 </head>
 <body>
 
-  <!-- HEADER KONTEN -->
+  <!-- HEADER POLOS DENGAN TOMBOL KEMBALI -->
   <div class="page-header">
+    <button onclick="tutupInformasi()" class="btn-kembali">← Kembali</button>
     <h2>📢 Informasi & Pengumuman</h2>
-    <p>Dapatkan update terbaru seputar kegiatan dan pengumuman resmi IRMA MAN 3 Bogor.</p>
   </div>
 
-  <!-- TEMPAT DAFTAR BERITA DIMUAT -->
+  <!-- DAFTAR BERITA -->
   <div id="daftarBeritaSiswa" class="news-grid">
     <div class="loading-state">Memuat informasi terbaru...</div>
   </div>
