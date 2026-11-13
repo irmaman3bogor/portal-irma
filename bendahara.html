@@ -8,14 +8,16 @@
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
-    body { background-color: #f4f6f9; margin: 0; padding: 20px; color: #333; }
+    
+    /* WARNA LATAR BELAKANG CREAM / BEIGE ALA KASIR */
+    body { background-color: #fcf8f2; margin: 0; padding: 20px; color: #2c2c2c; }
     .container { max-width: 1200px; margin: 0 auto; }
     
     /* HEADER */
-    .header { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; flex-wrap: wrap; gap: 10px; }
+    .header { display: flex; justify-content: space-between; align-items: center; background: #ffffff; padding: 15px 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; flex-wrap: wrap; gap: 10px; border-bottom: 3px solid #d4a373; }
     .header-left { display: flex; align-items: center; gap: 15px; }
     .header-left img { width: 50px; height: 50px; object-fit: contain; }
-    .header h2 { margin: 0; color: #0077b6; font-size: 20px; }
+    .header h2 { margin: 0; color: #bc6c25; font-size: 20px; }
     .header p { margin: 3px 0 0; color: #777; font-size: 12px; }
     .header-right { display: flex; gap: 10px; flex-wrap: wrap; }
     .btn-logout { background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
@@ -23,14 +25,14 @@
     
     /* TABS */
     .nav-tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; overflow-x: auto; padding-bottom: 5px; }
-    .tab-btn { padding: 10px 15px; background: #ffffff; border: 1px solid #ddd; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; color: #555; white-space: nowrap; }
-    .tab-btn.active { background: #0077b6; color: white; border-color: #0077b6; }
+    .tab-btn { padding: 10px 15px; background: #ffffff; border: 1px solid #e0d5c1; border-radius: 8px; font-weight: 700; font-size: 12px; cursor: pointer; color: #555; white-space: nowrap; }
+    .tab-btn.active { background: #bc6c25; color: white; border-color: #bc6c25; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
     
     /* CARDS */
     .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 25px; }
-    .card { background: #ffffff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #0077b6; }
+    .card { background: #ffffff; padding: 15px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); border-left: 5px solid #bc6c25; border-top: 1px solid #faedcd; }
     .card.in { border-left-color: #2a9d8f; }
     .card.out { border-left-color: #e76f51; }
     .card.asset { border-left-color: #e9c46a; }
@@ -38,25 +40,28 @@
     .card .nominal { font-size: 18px; font-weight: 700; margin: 0; }
     .card.in .nominal { color: #2a9d8f; }
     .card.out .nominal { color: #e76f51; }
-    .card.balance .nominal { color: #0077b6; }
+    .card.balance .nominal { color: #bc6c25; }
     .card.asset .nominal { color: #d4a373; }
     
     /* LAYOUT */
     .main-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; }
     @media (max-width: 900px) { .main-grid { grid-template-columns: 1fr; } }
     
-    .box { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; overflow-x: auto; }
-    .box h3 { margin-top: 0; font-size: 16px; color: #0077b6; border-bottom: 2px solid #f4f6f9; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+    .box { background: #ffffff; padding: 20px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.04); margin-bottom: 20px; overflow-x: auto; border: 1px solid #faedcd; }
+    .box h3 { margin-top: 0; font-size: 16px; color: #bc6c25; border-bottom: 2px solid #fefae0; padding-bottom: 10px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
     
     .form-group { margin-bottom: 12px; }
     .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 4px; color: #555; }
-    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
-    .btn-submit { width: 100%; padding: 12px; background: #0077b6; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
-    .btn-submit:hover { background: #005f8a; }
+    .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #d4a373; border-radius: 8px; font-size: 14px; background: #fffdf9; }
+    .btn-submit { width: 100%; padding: 12px; background: #bc6c25; color: white; border: none; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; }
+    .btn-submit:hover { background: #a25c1f; }
     .btn-cancel { background: #e76f51; margin-top: 5px; display: none; }
     
     .btn-tambah { background: #2a9d8f; color: white; border: none; padding: 6px 14px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer; }
     .btn-tambah:hover { background: #21867a; }
+
+    .btn-simpan-iuran { background: #2a9d8f; color: white; border: none; padding: 8px 16px; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-simpan-iuran:hover { background: #21867a; }
 
     .btn-aksi-kecil { padding: 4px 8px; border: none; border-radius: 4px; font-size: 11px; font-weight: 600; cursor: pointer; color: white; margin-right: 2px; }
     .btn-edit-siswa { background: #f39c12; }
@@ -64,14 +69,14 @@
 
     /* MODAL POPUP */
     .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
-    .modal-content h3 { color: #0077b6; margin-top: 0; border-bottom: 2px solid #f4f6f9; padding-bottom: 8px; }
+    .modal-content { background: #ffffff; padding: 25px; border-radius: 12px; width: 100%; max-width: 450px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); border: 2px solid #d4a373; }
+    .modal-content h3 { color: #bc6c25; margin-top: 0; border-bottom: 2px solid #faedcd; padding-bottom: 8px; }
 
     /* TABEL */
     .table-responsive { overflow-x: auto; }
     table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 750px; }
-    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
-    th { background: #f8f9fa; color: #0077b6; font-weight: 700; text-align: center; }
+    th, td { padding: 10px; text-align: left; border-bottom: 1px solid #faedcd; vertical-align: middle; }
+    th { background: #fefae0; color: #bc6c25; font-weight: 700; text-align: center; }
     td { text-align: left; }
     td.text-center, th.text-center { text-align: center; }
     
@@ -90,8 +95,8 @@
     /* LAPORAN */
     .report-table { width: 100%; margin-bottom: 15px; }
     .report-table td { padding: 8px 5px; }
-    .report-table .header-row { font-weight: 700; background: #eef9ff; color: #0077b6; }
-    .report-table .total-row { font-weight: 700; border-top: 2px solid #0077b6; border-bottom: 2px solid #0077b6; }
+    .report-table .header-row { font-weight: 700; background: #fefae0; color: #bc6c25; }
+    .report-table .total-row { font-weight: 700; border-top: 2px solid #bc6c25; border-bottom: 2px solid #bc6c25; }
     .indent { padding-left: 20px !important; }
     
     /* GRAFIK */
@@ -99,7 +104,7 @@
 
     @media print {
       body { background: white; padding: 0; }
-      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-tambah, .btn-aksi-kecil { display: none; }
+      .nav-tabs, .form-box, .btn-submit, .header p, .action-btn, .btn-logout, .btn-tambah, .btn-aksi-kecil, .btn-simpan-iuran { display: none; }
       .container { max-width: 100%; }
       .tab-content { display: block !important; }
       .box { box-shadow: none; border: 1px solid #ccc; }
@@ -108,7 +113,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -121,7 +126,7 @@
 
     const app = initializeApp(firebaseConfig);
     window.db = getFirestore(app);
-    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs };
+    window.fbTools = { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, deleteDoc, setDoc, getDoc, getDocs, writeBatch };
     
     muatDataKas();
   </script>
@@ -188,8 +193,7 @@
               <input type="number" id="nominal" placeholder="Contoh: 60000" min="1" required />
             </div>
             
-            <!-- Tambahan khusus untuk Pembelian Sebagian Utang -->
-            <div id="extraUtangFields" style="display:none; background:#f8f9fa; padding:10px; border-radius:8px; margin-bottom:12px; border:1px dashed #0077b6;">
+            <div id="extraUtangFields" style="display:none; background:#fefae0; padding:10px; border-radius:8px; margin-bottom:12px; border:1px dashed #bc6c25;">
               <div class="form-group">
                 <label style="color:#e76f51;">Dibayar Tunai dari Kas (Rp)</label>
                 <input type="number" id="nominalTunai" placeholder="Contoh: 20000" min="0" />
@@ -216,9 +220,9 @@
               <thead>
                 <tr>
                   <th>Tanggal</th>
-                  <th>Keterangan & Akun</th>
-                  <th class="text-center">Debet (Rp)</th>
-                  <th class="text-center">Kredit (Rp)</th>
+                  <th>Uraian Transaksi</th>
+                  <th class="text-center">Debet (D)</th>
+                  <th class="text-center">Kredit (K)</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -234,9 +238,12 @@
       <div class="box">
         <h3>
           <span>📋 Rekap Iuran Kas Bulanan - Kelas X</span>
-          <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-simpan-iuran" onclick="simpanSemuaIuran('10')">💾 Simpan Perubahan Iuran</button>
+            <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+          </div>
         </h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Centang bulan pembayaran lalu klik tombol <strong>"Simpan Perubahan Iuran"</strong> di atas untuk merekam ke Jurnal.</p>
         <div class="table-responsive">
           <table>
             <thead>
@@ -263,9 +270,12 @@
       <div class="box">
         <h3>
           <span>📋 Rekap Iuran Kas Bulanan - Kelas XI</span>
-          <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-simpan-iuran" onclick="simpanSemuaIuran('11')">💾 Simpan Perubahan Iuran</button>
+            <button class="btn-tambah" onclick="bukaModalSiswa()">+ Tambah Siswa</button>
+          </div>
         </h3>
-        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Bendahara tinggal mencentang kotak bulan pembayaran siswa. Saldo akan otomatis terekap ke Kas Masuk.</p>
+        <p style="font-size: 13px; color: #666; margin-bottom: 15px;">Centang bulan pembayaran lalu klik tombol <strong>"Simpan Perubahan Iuran"</strong> di atas untuk merekam ke Jurnal.</p>
         <div class="table-responsive">
           <table>
             <thead>
@@ -311,7 +321,7 @@
         <h3 style="text-align: center;">LAPORAN POSISI KEUANGAN (NERACA)</h3>
         <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
           <div>
-            <h4 style="color:#0077b6; border-bottom: 2px solid #0077b6; padding-bottom:5px;">ASET</h4>
+            <h4 style="color:#bc6c25; border-bottom: 2px solid #bc6c25; padding-bottom:5px;">ASET</h4>
             <table class="report-table">
               <tr class="header-row"><td colspan="2">Aset Lancar</td></tr>
               <tr><td class="indent">Kas / Bank</td><td style="text-align: right;" id="nrcKas">Rp 0</td></tr>
@@ -321,7 +331,7 @@
             </table>
           </div>
           <div>
-            <h4 style="color:#0077b6; border-bottom: 2px solid #0077b6; padding-bottom:5px;">KEWAJIBAN & EKUITAS</h4>
+            <h4 style="color:#bc6c25; border-bottom: 2px solid #bc6c25; padding-bottom:5px;">KEWAJIBAN & EKUITAS</h4>
             <table class="report-table">
               <tr class="header-row"><td colspan="2">Kewajiban</td></tr>
               <tbody id="nrcTabelUtang"></tbody>
@@ -371,7 +381,7 @@
           <tr><td class="indent">(+) Modal</td><td style="text-align: right;" id="cfModal">Rp 0</td></tr>
           <tr class="total-row"><td>Arus Kas Pendanaan</td><td style="text-align: right;" id="cfPendanaan">Rp 0</td></tr>
           <tr><td colspan="2">&nbsp;</td></tr>
-          <tr class="total-row" style="background:#eef9ff; color:#0077b6;"><td>KENAIKAN KAS BERSIH</td><td style="text-align: right;" id="cfTotal">Rp 0</td></tr>
+          <tr class="total-row" style="background:#fefae0; color:#bc6c25;"><td>KENAIKAN KAS BERSIH</td><td style="text-align: right;" id="cfTotal">Rp 0</td></tr>
         </table>
       </div>
     </div>
@@ -542,7 +552,7 @@
         nominalTunai = parseFloat(document.getElementById("nominalTunai").value) || 0;
         nominalUtang = parseFloat(document.getElementById("nominalUtang").value) || 0;
         if ((nominalTunai + nominalUtang) !== nominal) {
-          alert("⚠️ Perhatian: Total Pembayaran Tunai (" + nominalTunai + ") + Sisa Utang (" + nominalUtang + ") harus sama dengan Total Harga Pembelian (" + nominal + ")!");
+          alert("⚠️ Perhatian: Pembayaran Tunai (" + nominalTunai + ") + Sisa Utang (" + nominalUtang + ") harus sama dengan Total Harga Pembelian (" + nominal + ")!");
           return;
         }
       }
@@ -558,7 +568,7 @@
             waktu: serverTimestamp(),
             tanggal: new Date().toLocaleDateString("id-ID")
           });
-          alert("Transaksi dicatat dengan Jurnal Majemuk!");
+          alert("Transaksi Jurnal Majemuk Berhasil Disimpan!");
         }
         document.getElementById("formAkuntansi").reset();
         document.getElementById("editId").value = "";
@@ -660,7 +670,7 @@
               daftarBulan.forEach(bulan => {
                 const isChecked = statusBulan[bulan] ? "checked" : "";
                 if (isChecked) totalNominalIuranSiswa += NOMINAL_IURAN;
-                htmlTD += `<td class="text-center"><input type="checkbox" class="checkbox-iuran" ${isChecked} onchange="updateIuranSiswa('${siswaId}', '${bulan}', this.checked, '${namaSiswa.replace(/'/g, "")}')"></td>`;
+                htmlTD += `<td class="text-center"><input type="checkbox" class="checkbox-iuran iuran-input-${isKelas11 ? '11' : '10'}" data-siswa="${siswaId}" data-nama="${namaSiswa.replace(/'/g, "")}" data-bulan="${bulan}" ${isChecked}></td>`;
               });
 
               htmlTD += `
@@ -691,41 +701,73 @@
       }, 300);
     }
 
-    window.updateIuranSiswa = async function(siswaId, bulan, isChecked, namaSiswa) {
+    // FUNGSI SIMPAN SEMUA IURAN KELAS KETIKA TOMBOL SIMPAN DIKLIK
+    window.simpanSemuaIuran = async function(kelasTarget) {
+      const checkboxes = document.querySelectorAll(`.iuran-input-${kelasTarget}`);
       const { doc, getDoc, setDoc, addDoc, collection, serverTimestamp, getDocs, query, where, deleteDoc } = window.fbTools;
-      const iuranRef = doc(window.db, "iuran_bulanan", siswaId);
+      
+      if (!confirm(`💾 Simpan perubahan iuran untuk Kelas ${kelasTarget === '10' ? 'X' : 'XI'}?`)) return;
+
       try {
-        const iuranSnap = await getDoc(iuranRef);
-        let data = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
-        if (!data.bulan) data.bulan = {};
+        let perubahanSiswa = {};
 
-        data.bulan[bulan] = isChecked;
-        data.updatedAt = new Date().toISOString();
+        checkboxes.forEach(cb => {
+          const sId = cb.getAttribute("data-siswa");
+          const nama = cb.getAttribute("data-nama");
+          const bulan = cb.getAttribute("data-bulan");
+          const isChecked = cb.checked;
 
-        await setDoc(iuranRef, data, { merge: true });
+          if (!perubahanSiswa[sId]) {
+            perubahanSiswa[sId] = { nama: nama, bulan: {} };
+          }
+          perubahanSiswa[sId].bulan[bulan] = isChecked;
+        });
 
-        const jurnalRef = collection(window.db, "jurnal_irma");
-        const ketUnik = `Iuran Kas ${bulan.toUpperCase()} - ${namaSiswa} (${siswaId})`;
+        for (const sId in perubahanSiswa) {
+          const iuranRef = doc(window.db, "iuran_bulanan", sId);
+          const iuranSnap = await getDoc(iuranRef);
+          let dataLama = iuranSnap.exists() ? iuranSnap.data() : { bulan: {} };
+          if (!dataLama.bulan) dataLama.bulan = {};
 
-        if (isChecked) {
-          await addDoc(jurnalRef, {
-            jenisPost: "Pendapatan",
-            kategoriAkun: "411 - Iuran / Kas Bulanan",
-            nominal: NOMINAL_IURAN,
-            keterangan: ketUnik,
-            waktu: serverTimestamp(),
-            tanggal: new Date().toLocaleDateString("id-ID")
-          });
-        } else {
-          const qJurnal = query(jurnalRef, where("keterangan", "==", ketUnik));
-          const snapJurnal = await getDocs(qJurnal);
-          snapJurnal.forEach(async (jDoc) => {
-            await deleteDoc(doc(window.db, "jurnal_irma", jDoc.id));
-          });
+          const bulanBaru = perubahanSiswa[sId].bulan;
+          const namaSiswa = perubahanSiswa[sId].nama;
+          const jurnalRef = collection(window.db, "jurnal_irma");
+
+          for (const b in bulanBaru) {
+            const statusBaru = bulanBaru[b];
+            const statusLama = !!dataLama.bulan[b];
+
+            if (statusBaru !== statusLama) {
+              dataLama.bulan[b] = statusBaru;
+              const ketUnik = `Iuran Kas ${b.toUpperCase()} - ${namaSiswa} (${sId})`;
+
+              if (statusBaru) {
+                await addDoc(jurnalRef, {
+                  jenisPost: "Pendapatan",
+                  kategoriAkun: "411 - Iuran / Kas Bulanan",
+                  nominal: NOMINAL_IURAN,
+                  keterangan: ketUnik,
+                  waktu: serverTimestamp(),
+                  tanggal: new Date().toLocaleDateString("id-ID")
+                });
+              } else {
+                const qJurnal = query(jurnalRef, where("keterangan", "==", ketUnik));
+                const snapJurnal = await getDocs(qJurnal);
+                snapJurnal.forEach(async (jDoc) => {
+                  await deleteDoc(doc(window.db, "jurnal_irma", jDoc.id));
+                });
+              }
+            }
+          }
+
+          dataLama.updatedAt = new Date().toISOString();
+          await setDoc(iuranRef, dataLama, { merge: true });
         }
+
+        alert("✅ Data iuran kas berhasil disimpan dan dicatat ke Jurnal Umum!");
         muatDataKas();
       } catch (error) {
-        alert("Gagal memperbarui iuran: " + error.message);
+        alert("❌ Gagal menyimpan iuran: " + error.message);
       }
     }
 
@@ -789,25 +831,25 @@
                     totalModal += nom; 
                   }
 
-                  let debetStr = "-";
-                  let kreditStr = "-";
+                  let debetStr = "";
+                  let kreditStr = "";
                   let badgeClass = "badge-in";
 
                   if (post === "Pendapatan" || post === "Modal") {
-                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#2a9d8f; font-weight:600;">Kas (111)</small>`;
-                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">${kat}</small>`;
+                    debetStr = `<strong style="color:#bc6c25;">Kas (111)</strong><br><span style="color:#2a9d8f;">Rp ${nom.toLocaleString("id-ID")} (D)</span>`;
+                    kreditStr = `<strong style="color:#555;">${kat}</strong><br><span style="color:#e76f51;">Rp ${nom.toLocaleString("id-ID")} (K)</span>`;
                     badgeClass = "badge-in";
                   } else if (post === "Beban" || post === "Aset") {
-                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#e76f51; font-weight:600;">${kat}</small>`;
-                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">Kas (111)</small>`;
+                    debetStr = `<strong style="color:#bc6c25;">${kat}</strong><br><span style="color:#2a9d8f;">Rp ${nom.toLocaleString("id-ID")} (D)</span>`;
+                    kreditStr = `<strong style="color:#555;">Kas (111)</strong><br><span style="color:#e76f51;">Rp ${nom.toLocaleString("id-ID")} (K)</span>`;
                     badgeClass = "badge-out";
                   } else if (post === "BebanSebagianUtang") {
-                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#e76f51; font-weight:600;">${kat}</small>`;
-                    kreditStr = `Rp ${tunai.toLocaleString("id-ID")} <small style="color:#555;">Kas</small><br>Rp ${utang.toLocaleString("id-ID")} <small style="color:#555;">Utang</small>`;
+                    debetStr = `<strong style="color:#bc6c25;">${kat}</strong><br><span style="color:#2a9d8f;">Rp ${nom.toLocaleString("id-ID")} (D)</span>`;
+                    kreditStr = `<strong style="color:#555;">Kas (111)</strong> : Rp ${tunai.toLocaleString("id-ID")} (K)<br><strong style="color:#555;">Utang Usaha (211)</strong> : Rp ${utang.toLocaleString("id-ID")} (K)`;
                     badgeClass = "badge-hybrid";
                   } else if (post === "Utang") {
-                    debetStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#2a9d8f; font-weight:600;">${kat}</small>`;
-                    kreditStr = `Rp ${nom.toLocaleString("id-ID")} <br><small style="color:#555;">Utang Usaha (211)</small>`;
+                    debetStr = `<strong style="color:#bc6c25;">${kat}</strong><br><span style="color:#2a9d8f;">Rp ${nom.toLocaleString("id-ID")} (D)</span>`;
+                    kreditStr = `<strong style="color:#555;">Utang Usaha (211)</strong><br><span style="color:#e76f51;">Rp ${nom.toLocaleString("id-ID")} (K)</span>`;
                     badgeClass = "badge-in";
                   }
 
@@ -816,7 +858,7 @@
                       <td>${data.tanggal || '-'}</td>
                       <td>
                         <strong>${data.keterangan || '-'}</strong><br>
-                        <span class="badge ${badgeClass}">${post === 'BebanSebagianUtang' ? 'Beban Sebagian Utang' : post}</span>
+                        <span class="badge ${badgeClass}">${post === 'BebanSebagianUtang' ? 'Pembelian Sebagian Utang' : post}</span>
                       </td>
                       <td class="text-center" style="font-size:12px;">${debetStr}</td>
                       <td class="text-center" style="font-size:12px;">${kreditStr}</td>
@@ -829,7 +871,6 @@
                 });
               }
 
-              // Kas bersih dihitung dari total pendapatan + modal + utang baru - beban tunai - aset
               const totalKasKeluarNonTunai = (snapshot.docs || []).reduce((acc, d) => {
                 let dat = d.data();
                 if (dat.jenisPost === "BebanSebagianUtang") return acc + (dat.nominalTunai || 0);
@@ -837,13 +878,6 @@
                 return acc;
               }, 0);
 
-              const totalKasMasuk = totalPendapatanJurnal + totalModal + (snapshot.docs || []).reduce((acc, d) => {
-                let dat = d.data();
-                if (dat.jenisPost === "Utang" || dat.jenisPost === "Pendapatan" || dat.jenisPost === "Modal") return acc + (dat.nominal || 0);
-                return acc;
-              }, 0);
-
-              // Perhitungan Saldo Kas Bersih riil
               const kasBersih = totalPendapatanJurnal + totalModal - totalKasKeluarNonTunai;
               const surplusDefisit = totalPendapatanJurnal - totalBeban;
               const totalAktiva = kasBersih + totalAset;
