@@ -36,9 +36,21 @@
 
     /* Konten Body */
     .content-body { padding: 30px; flex: 1; }
-    .welcome-box { background: linear-gradient(135deg, #0a3622, #1a5c3a); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+    .welcome-box { background: linear-gradient(135deg, #0a3622, #1a5c3a); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
     .welcome-box h2 { color: #d4af37; margin-bottom: 10px; }
     .welcome-box p { font-size: 14px; line-height: 1.6; opacity: 0.9; }
+
+    /* --- SECTION INFORMASI TERBARU --- */
+    .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
+    .section-title h3 { color: #0a3622; font-size: 18px; }
+    .btn-kelola { background: #2a9d8f; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 700; }
+    .btn-kelola:hover { background: #21867a; }
+
+    .info-list { display: grid; gap: 15px; }
+    .info-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #0a3622; }
+    .info-title { font-weight: 700; color: #0a3622; font-size: 15px; margin-bottom: 5px; }
+    .info-meta { font-size: 11px; color: #888; margin-bottom: 10px; }
+    .info-desc { font-size: 13px; color: #444; line-height: 1.5; white-space: pre-line; }
 
     /* --- RESPONSIF HP --- */
     @media (max-width: 768px) {
@@ -51,6 +63,52 @@
       .welcome-box { padding: 20px; }
     }
   </style>
+
+  <!-- SCRIPT FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // Muat 3 berita terbaru saja untuk beranda
+    window.addEventListener("DOMContentLoaded", async () => {
+      const container = document.getElementById("infoTerbaru");
+      try {
+        const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
+        const snap = await getDocs(q);
+        
+        if (snap.empty) {
+          container.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`;
+          return;
+        }
+
+        let html = "";
+        snap.forEach(doc => {
+          const item = doc.data();
+          html += `
+            <div class="info-card">
+              <div class="info-title">${item.judul}</div>
+              <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
+              <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      } catch (err) {
+        container.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`;
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -85,17 +143,30 @@
     <div class="top-header">
       <div style="display: flex; align-items: center;">
         <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <h1>Daftar Anggota IRMA</h1>
+        <h1>Beranda Admin</h1>
       </div>
       <button onclick="logout()" class="btn-logout">Keluar</button>
     </div>
 
     <!-- KONTEN BERANDA -->
     <div class="content-body">
+      
+      <!-- WELCOME BOX -->
       <div class="welcome-box">
         <h2>Selamat Datang di Portal IRMA!</h2>
         <p>Sistem Informasi Organisasi Rohis MAN 3 Bogor. Silakan pilih menu di sebelah kiri untuk mulai mengelola data organisasi, keuangan, kehadiran, dan program kerja.</p>
       </div>
+
+      <!-- SECTION INFORMASI TERBARU -->
+      <div class="section-title">
+        <h3>📢 Informasi Terbaru</h3>
+        <a href="admin-informasi.html" class="btn-kelola">Kelola Semua Informasi →</a>
+      </div>
+      
+      <div id="infoTerbaru" class="info-list">
+        <p style="color:#777; font-size:14px;">Memuat informasi...</p>
+      </div>
+
     </div>
 
   </div>
