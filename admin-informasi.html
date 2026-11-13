@@ -22,16 +22,8 @@
     /* MAIN CONTENT */
     .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
     .topbar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-    
-    .topbar-left { display: flex; align-items: center; gap: 20px; }
     .topbar h2 { margin: 0; color: #0b3c29; font-size: 18px; }
-    
-    /* TOMBOL KEMBALI */
-    .btn-kembali { background: #6c757d; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
-    .btn-kembali:hover { background: #5a6268; }
-    
     .btn-keluar { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
-    .btn-keluar:hover { background: #c0392b; }
 
     .content-body { padding: 30px; max-width: 900px; width: 100%; margin: 0 auto; }
     .btn-tambah-berita { background: #2a9d8f; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -55,13 +47,18 @@
     .news-date { font-size: 11px; color: #777; background: #e9ecef; padding: 4px 8px; border-radius: 4px; }
     .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; }
     .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
+    
+    /* GRUP TOMBOL AKSI */
+    .action-buttons { display: flex; gap: 8px; }
+    .btn-edit { background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+    .btn-edit:hover { background: #d68910; }
     .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .btn-hapus:hover { background: #c0392b; }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -76,34 +73,78 @@
 
     window.addEventListener("DOMContentLoaded", () => { muatBerita(); });
 
-    window.bukaModalBerita = () => { document.getElementById("modalBerita").style.display = "flex"; }
+    // ================= MODAL TAMBAH =================
+    window.bukaModalBerita = () => { 
+      document.getElementById("formBerita").reset();
+      document.getElementById("modalTitle").innerText = "Tambah Berita Baru";
+      document.getElementById("editDocId").value = "";
+      document.getElementById("modalBerita").style.display = "flex"; 
+    }
+    
     window.tutupModalBerita = () => { document.getElementById("modalBerita").style.display = "none"; }
 
-    window.simpanBeritaBaru = async function(e) {
+    // ================= SIMPAN (TAMBAH / EDIT) =================
+    window.simpanBerita = async function(e) {
       e.preventDefault();
+      const docId = document.getElementById("editDocId").value;
+      const judul = document.getElementById("inputJudul").value;
+      const isi = document.getElementById("inputIsi").value;
+      const penulis = document.getElementById("inputPenulis").value || "Pengurus / Pembina IRMA";
+
       try {
-        await addDoc(collection(db, "informasi_irma"), {
-          judul: document.getElementById("inputJudul").value,
-          isi: document.getElementById("inputIsi").value,
-          penulis: document.getElementById("inputPenulis").value || "Pengurus / Pembina IRMA",
-          waktu: serverTimestamp(),
-          tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
-        });
-        alert("✅ Berita berhasil diposting!");
+        if (docId) {
+          // Mode EDIT
+          await updateDoc(doc(db, "informasi_irma", docId), {
+            judul: judul,
+            isi: isi,
+            penulis: penulis
+          });
+          alert("✅ Berita berhasil diperbarui!");
+        } else {
+          // Mode TAMBAH BARU
+          await addDoc(collection(db, "informasi_irma"), {
+            judul: judul,
+            isi: isi,
+            penulis: penulis,
+            waktu: serverTimestamp(),
+            tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
+          });
+          alert("✅ Berita berhasil diposting!");
+        }
         tutupModalBerita();
-        document.getElementById("formBerita").reset();
         muatBerita();
       } catch (err) { alert("❌ Gagal: " + err.message); }
     }
 
+    // ================= BUKA MODAL EDIT =================
+    window.editBerita = async function(id) {
+      try {
+        const docRef = doc(db, "informasi_irma", id);
+        const docSnap = await getDoc(docRef);
+        
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          document.getElementById("editDocId").value = id;
+          document.getElementById("inputJudul").value = data.judul;
+          document.getElementById("inputPenulis").value = data.penulis;
+          document.getElementById("inputIsi").value = data.isi;
+          
+          document.getElementById("modalTitle").innerText = "Edit Berita";
+          document.getElementById("modalBerita").style.display = "flex";
+        } else {
+          alert("Data berita tidak ditemukan.");
+        }
+      } catch (err) { alert("❌ Gagal mengambil data: " + err.message); }
+    }
+
+    // ================= MUAT DAFTAR BERITA =================
     async function muatBerita() {
       const container = document.getElementById("daftarInformasi");
       container.innerHTML = `<p style="text-align:center; color:#777;">Memuat...</p>`;
       try {
         const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"));
         const snap = await getDocs(q);
-        if (snap.empty) { container.innerHTML = `<div style="background:white; padding:30px; text-align:center; border-radius:12px; color:#777;">Belum ada berita.</div>`; return; }
-        
+        if (snap.empty) { container.innerHTML = `<div style="background:white; padding:30px; text-align:center; border-radius:12px;">Belum ada berita.</div>`; return; }
         let html = "";
         snap.forEach((d) => {
           const item = d.data();
@@ -116,14 +157,18 @@
               <div class="news-content">${item.isi}</div>
               <div class="news-footer">
                 <span>👤 Oleh: <strong>${item.penulis}</strong></span>
-                <button class="btn-hapus" onclick="hapusPosting('${d.id}')">Hapus</button>
+                <div class="action-buttons">
+                  <button class="btn-edit" onclick="editBerita('${d.id}')">✏️ Edit</button>
+                  <button class="btn-hapus" onclick="hapusPosting('${d.id}')">🗑️ Hapus</button>
+                </div>
               </div>
             </div>`;
         });
         container.innerHTML = html;
-      } catch (err) { container.innerHTML = `<p style="color:red; text-align:center;">Gagal memuat.</p>`; }
+      } catch (err) { container.innerHTML = `<p style="color:red;">Gagal memuat.</p>`; }
     }
 
+    // ================= HAPUS BERITA =================
     window.hapusPosting = async function(id) {
       if (!confirm("⚠️ Yakin hapus berita ini?")) return;
       try { await deleteDoc(doc(db, "informasi_irma", id)); muatBerita(); }
@@ -133,7 +178,7 @@
 </head>
 <body>
 
-  <!-- SIDEBAR (Hanya Logo dan Menu Kelola Informasi) -->
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <img src="logo.png" alt="Logo">
@@ -141,20 +186,14 @@
       <p>MAN 3 BOGOR</p>
     </div>
     <ul class="menu-list">
-      <!-- Menu Dashboard & Kegiatan sudah dihilangkan -->
       <li class="menu-item active"><a href="admin-informasi.html">📢 Kelola Informasi</a></li>
     </ul>
   </div>
 
   <!-- KONTEN UTAMA -->
   <div class="main-content">
-    
-    <!-- TOPBAR DENGAN TOMBOL KEMBALI -->
     <div class="topbar">
-      <div class="topbar-left">
-        <a href="beranda.html" class="btn-kembali">← Kembali ke Beranda</a>
-        <h2>📢 Panel Kelola Informasi (Admin)</h2>
-      </div>
+      <h2>📢 Panel Kelola Informasi (Admin)</h2>
       <button onclick="localStorage.clear(); window.location.href='index.html';" class="btn-keluar">Keluar</button>
     </div>
 
@@ -164,11 +203,14 @@
     </div>
   </div>
 
-  <!-- MODAL POPUP FORM POSTING -->
+  <!-- MODAL POPUP FORM (TAMBAH & EDIT) -->
   <div id="modalBerita" class="modal">
     <div class="modal-content">
-      <h3>Tambah Berita Baru</h3>
-      <form id="formBerita" onsubmit="simpanBeritaBaru(event)">
+      <h3 id="modalTitle">Tambah Berita Baru</h3>
+      <form id="formBerita" onsubmit="simpanBerita(event)">
+        <!-- Hidden ID untuk Edit -->
+        <input type="hidden" id="editDocId" value="" />
+        
         <div class="form-group">
           <label>Judul</label>
           <input type="text" id="inputJudul" required />
@@ -179,9 +221,9 @@
         </div>
         <div class="form-group">
           <label>Isi Berita</label>
-          <textarea id="inputIsi" rows="5" required></textarea>
+          <textarea id="inputIsi" rows="6" required></textarea>
         </div>
-        <button type="submit" class="btn-submit">🚀 Publikasikan</button>
+        <button type="submit" class="btn-submit">💾 Simpan</button>
         <button type="button" class="btn-batal" onclick="tutupModalBerita()">Batal</button>
       </form>
     </div>
