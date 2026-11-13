@@ -3,62 +3,44 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Beranda Admin - Portal IRMA</title>
+  <title>Login Portal IRMA - MAN 3 Bogor</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
-    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
-    body { background-color: #f4f6f9; display: flex; height: 100vh; overflow: hidden; }
-
-    .sidebar { width: 260px; background-color: #0a3622; color: white; display: flex; flex-direction: column; transition: 0.3s; z-index: 100; }
-    .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-    .sidebar-header img { width: 60px; margin-bottom: 10px; }
-    .sidebar-header h2 { color: #d4af37; font-size: 18px; margin-bottom: 5px; }
-    .sidebar-header p { font-size: 11px; color: #ccc; }
-    
-    .sidebar-menu { flex: 1; overflow-y: auto; padding: 15px 0; }
-    .sidebar-menu a { display: flex; align-items: center; padding: 12px 20px; color: #e0e0e0; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; border-left: 4px solid transparent; }
-    .sidebar-menu a:hover, .sidebar-menu a.active { background-color: rgba(255,255,255,0.05); border-left-color: #d4af37; color: #d4af37; }
-    .sidebar-menu a span { margin-right: 15px; font-size: 16px; }
-
-    .main-content { flex: 1; display: flex; flex-direction: column; overflow-y: auto; position: relative; }
-    .top-header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); position: sticky; top: 0; z-index: 50; }
-    .top-header h1 { font-size: 20px; color: #0a3622; }
-    .btn-logout { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 13px; transition: 0.2s; }
-    .btn-logout:hover { background: #c0392b; }
-    
-    .menu-toggle { display: none; font-size: 24px; background: none; border: none; color: #0a3622; cursor: pointer; margin-right: 15px; }
-
-    .content-body { padding: 30px; flex: 1; }
-    .welcome-box { background: linear-gradient(135deg, #0a3622, #1a5c3a); color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 30px; }
-    .welcome-box h2 { color: #d4af37; margin-bottom: 10px; }
-    .welcome-box p { font-size: 14px; line-height: 1.6; opacity: 0.9; }
-
-    .section-title { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e0e0e0; padding-bottom: 10px; }
-    .section-title h3 { color: #0a3622; font-size: 18px; }
-    .btn-kelola { background: #2a9d8f; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 700; }
-    .btn-kelola:hover { background: #21867a; }
-
-    .info-list { display: grid; gap: 15px; }
-    .info-card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-left: 4px solid #0a3622; }
-    .info-title { font-weight: 700; color: #0a3622; font-size: 15px; margin-bottom: 5px; }
-    .info-meta { font-size: 11px; color: #888; margin-bottom: 10px; }
-    .info-desc { font-size: 13px; color: #444; line-height: 1.5; white-space: pre-line; }
-
-    @media (max-width: 768px) {
-      .sidebar { position: fixed; left: -260px; height: 100vh; }
-      .sidebar.open { left: 0; }
-      .menu-toggle { display: block; }
-      .top-header { padding: 15px 20px; }
-      .top-header h1 { font-size: 16px; }
-      .content-body { padding: 20px; }
-      .welcome-box { padding: 20px; }
-    }
+    body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0a3622; display: flex; justify-content: center; align-items: center; height: 100vh; }
+    .login-box { background: white; padding: 40px; border-radius: 16px; width: 100%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); text-align: center; }
+    .login-box h1 { color: #0a3622; margin-top: 0; font-size: 24px; }
+    .login-box p { color: #666; font-size: 14px; margin-bottom: 25px; }
+    .form-group { margin-bottom: 15px; text-align: left; }
+    .form-group label { display: block; font-weight: bold; font-size: 13px; color: #0a3622; margin-bottom: 5px; }
+    .form-group input { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
+    .btn-login { background: #d4af37; color: #0a3622; border: none; padding: 14px; width: 100%; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 10px; transition: 0.3s; }
+    .btn-login:hover { background: #f1c40f; }
+    .error { color: red; font-size: 13px; margin-top: 10px; display: none; }
   </style>
+</head>
+<body>
+
+  <div class="login-box">
+    <img src="logo.png" alt="Logo IRMA" style="width: 80px; height: auto; margin-bottom: 10px;">
+    <h1>PORTAL IRMA</h1>
+    <p>MAN 3 BOGOR</p>
+    <div class="error" id="errorMsg"></div>
+
+    <div class="form-group">
+      <label>NIS Siswa / Email Admin</label>
+      <input type="text" id="inEmail" placeholder="Masukkan NIS atau Email">
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" id="inPassword" placeholder="Masukkan password Anda">
+    </div>
+
+    <button class="btn-login" onclick="login()">MASUK</button>
+  </div>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-    
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
       authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
@@ -67,93 +49,57 @@
       messagingSenderId: "582215464487",
       appId: "1:582215464487:web:4d0583016ebec700dec002"
     };
+
     const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    const auth = getAuth(app);
 
-    window.addEventListener("DOMContentLoaded", async () => {
-      const container = document.getElementById("infoTerbaru");
-      try {
-        const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
-        const snap = await getDocs(q);
-        if (snap.empty) { container.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`; return; }
-        let html = "";
-        snap.forEach(doc => {
-          const item = doc.data();
-          html += `
-            <div class="info-card">
-              <div class="info-title">${item.judul}</div>
-              <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
-              <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
-            </div>`;
-        });
-        container.innerHTML = html;
-      } catch (err) { container.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`; }
-    });
-  </script>
-</head>
-<body>
+    window.login = function() {
+      const input = document.getElementById("inEmail").value.trim();
+      const password = document.getElementById("inPassword").value;
+      const errorMsg = document.getElementById("errorMsg");
 
-  <div class="sidebar" id="sidebar">
-    <div class="sidebar-header">
-      <img src="logo.png" alt="Logo IRMA">
-      <h2>PORTAL IRMA</h2>
-      <p>MAN 3 BOGOR</p>
-    </div>
-    <div class="sidebar-menu">
-      <a href="beranda.html" class="active"><span>🏠</span> Home</a>
-      <a href="profil-irma.html"><span>📖</span> Profil IRMA</a>
-      <a href="admin-informasi.html"><span>📢</span> Informasi</a>
-      <a href="keuangan.html"><span>💰</span> Keuangan</a>
-      <a href="kehadiran.html"><span>📋</span> Kehadiran</a>
-      <a href="data-anggota.html"><span>👥</span> Data Anggota</a>
-      <a href="kegiatan.html"><span>📅</span> Kegiatan</a>
-      <a href="program-kerja.html"><span>💼</span> Program Kerja</a>
-      <a href="bendahara.html"><span>📊</span> Sistem Akuntansi IRMA</a>
-      <a href="daftar-anggota.html"><span>📋</span> Daftar Anggota IRMA</a>
-    </div>
-  </div>
+      errorMsg.style.display = "none";
 
-  <div class="main-content">
-    <div class="top-header">
-      <div style="display: flex; align-items: center;">
-        <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-        <h1>Beranda Admin</h1>
-      </div>
-      <button onclick="logout()" class="btn-logout">Keluar</button>
-    </div>
-
-    <div class="content-body">
-      <div class="welcome-box">
-        <h2>Selamat Datang di Portal IRMA!</h2>
-        <p>Sistem Informasi Organisasi Rohis MAN 3 Bogor. Silakan pilih menu di sebelah kiri untuk mulai mengelola data organisasi, keuangan, kehadiran, dan program kerja.</p>
-      </div>
-
-      <div class="section-title">
-        <h3>📢 Informasi Terbaru</h3>
-        <a href="admin-informasi.html" class="btn-kelola">Kelola Semua Informasi →</a>
-      </div>
-      
-      <div id="infoTerbaru" class="info-list">
-        <p style="color:#777; font-size:14px;">Memuat informasi...</p>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    if (localStorage.getItem("irmaLogin") !== "true") {
-      window.location.href = "index.html";
-    }
-
-    function logout() {
-      if (confirm("Yakin ingin keluar dari Portal IRMA?")) {
-        localStorage.removeItem("irmaLogin");
-        localStorage.removeItem("userLoginData");
-        window.location.href = "index.html";
+      if (!input || !password) {
+        errorMsg.style.display = "block";
+        errorMsg.textContent = "NIS/Email dan Password tidak boleh kosong!";
+        return;
       }
-    }
 
-    function toggleSidebar() {
-      document.getElementById("sidebar").classList.toggle("open");
+      // LOGIKA PEMBEDA EMAIL & NIS
+      let email = input;
+      if (!input.includes("@")) {
+        // Jika tidak ada @ (berarti NIS siswa), ubah ke format email
+        email = input + "@irma.sch.id";
+      }
+
+      signInWithEmailAndPassword(auth, email, password)
+        .then((userCredential) => {
+          const user = userCredential.user;
+          localStorage.setItem("irmaLogin", "true");
+          localStorage.setItem("userLoginData", JSON.stringify({
+            uid: user.uid,
+            email: user.email,
+            nama: input,
+            nis: input
+          }));
+
+          // LOGIKA PENGARAHAN BERDASARKAN EMAIL
+          if (user.email === "admin@irma.sch.id") {
+            window.location.href = "beranda.html"; // Admin
+          } else if (user.email === "bendahara@irma.sch.id") {
+            window.location.href = "bendahara.html"; // Bendahara
+          } else if (user.email.endsWith("@irma.sch.id")) {
+            window.location.href = "beranda-siswa.html"; // Siswa
+          } else {
+            window.location.href = "beranda.html"; // Admin lain (jika ada)
+          }
+        })
+        .catch((error) => {
+          errorMsg.style.display = "block";
+          errorMsg.textContent = "Gagal login: NIS/Email atau password salah!";
+          console.error(error);
+        });
     }
   </script>
 </body>
