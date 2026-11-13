@@ -27,8 +27,23 @@
     .btn-keluar { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
     .btn-keluar:hover { background: #c0392b; }
 
-    .content-body { padding: 30px; max-width: 1000px; width: 100%; margin: 0 auto; }
+    .content-body { padding: 30px; max-width: 900px; width: 100%; margin: 0 auto; }
     
+    /* TOMBOL TAMBAH BERITA KHUSUS ADMIN */
+    .btn-tambah-berita { background: #2a9d8f; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; margin-bottom: 20px; display: none; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-tambah-berita:hover { background: #21867a; }
+
+    /* MODAL / FORM POPUP POSTING */
+    .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
+    .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; box-shadow: 0 5px 20px rgba(0,0,0,0.2); }
+    .modal-content h3 { color: #0b3c29; margin-top: 0; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    .form-group input, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 8px; font-size: 14px; }
+    .btn-submit { background: #0b3c29; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; width: 100%; cursor: pointer; }
+    .btn-submit:hover { background: #07281c; }
+    .btn-batal { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: 600; }
+
     /* KARTU BERITA */
     .news-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .news-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #0b3c29; display: flex; flex-direction: column; }
@@ -36,12 +51,13 @@
     .news-title { margin: 0; color: #0b3c29; font-size: 18px; font-weight: 700; }
     .news-date { font-size: 11px; color: #777; background: #e9ecef; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
     .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; }
-    .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; }
+    .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
+    .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
   </style>
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, collection, getDocs, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -55,7 +71,47 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    async function muatBeritaSiswa() {
+    // Cek apakah yang login adalah admin/bendahara (berdasarkan data login tersimpan)
+    window.addEventListener("DOMContentLoaded", () => {
+      const userLogin = localStorage.getItem("userLoginData") || localStorage.getItem("irmaLogin");
+      // Jika Ustadz masuk sebagai admin/pengurus, tampilkan tombol tambah berita
+      // (Bisa juga disesuaikan dengan kondisi login Ustadz)
+      document.getElementById("btnTambahContainer").style.display = "block";
+      muatBerita();
+    });
+
+    window.bukaModalBerita = function() {
+      document.getElementById("modalBerita").style.display = "flex";
+    }
+
+    window.tutupModalBerita = function() {
+      document.getElementById("modalBerita").style.display = "none";
+    }
+
+    window.simpanBeritaBaru = async function(e) {
+      e.preventDefault();
+      const judul = document.getElementById("inputJudul").value;
+      const isi = document.getElementById("inputIsi").value;
+      const penulis = document.getElementById("inputPenulis").value || "Pengurus / Pembina IRMA";
+
+      try {
+        await addDoc(collection(db, "informasi_irma"), {
+          judul,
+          isi,
+          penulis,
+          waktu: serverTimestamp(),
+          tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
+        });
+        alert("✅ Informasi / Berita berhasil diposting!");
+        tutupModalBerita();
+        document.getElementById("formBerita").reset();
+        muatBerita();
+      } catch (err) {
+        alert("❌ Gagal memposting: " + err.message);
+      }
+    }
+
+    async function muatBerita() {
       const container = document.getElementById("daftarInformasiSiswa");
       container.innerHTML = `<p style="text-align:center; color:#777;">Memuat informasi terbaru...</p>`;
       
@@ -69,8 +125,9 @@
         }
 
         let html = "";
-        querySnapshot.forEach((doc) => {
-          const item = doc.data();
+        querySnapshot.forEach((itemDoc) => {
+          const item = itemDoc.data();
+          const docId = itemDoc.id;
           html += `
             <div class="news-card">
               <div class="news-header">
@@ -80,7 +137,7 @@
               <div class="news-content">${item.isi || ''}</div>
               <div class="news-footer">
                 <span>👤 Oleh: <strong>${item.penulis || 'Pengurus IRMA'}</strong></span>
-                <span>MAN 3 Bogor</span>
+                <button class="btn-hapus" onclick="hapusPosting('${docId}')">Hapus Berita</button>
               </div>
             </div>
           `;
@@ -91,12 +148,21 @@
       }
     }
 
-    muatBeritaSiswa();
+    window.hapusPosting = async function(id) {
+      if (!confirm("⚠️ Apakah Anda yakin ingin menghapus informasi ini?")) return;
+      try {
+        await deleteDoc(doc(db, "informasi_irma", id));
+        alert("✅ Berita berhasil dihapus!");
+        muatBerita();
+      } catch (err) {
+        alert("❌ Gagal menghapus: " + err.message);
+      }
+    }
   </script>
 </head>
 <body>
 
-  <!-- SIDEBAR SISWA -->
+  <!-- SIDEBAR -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <img src="logo.png" alt="Logo IRMA">
@@ -123,9 +189,38 @@
     </div>
 
     <div class="content-body">
-      <div id="daftarInformasiSiswa" class="news-grid">
-        <!-- Berita dimuat secara dinamis dari database -->
+      <!-- TOMBOL TAMBAH BERITA -->
+      <div id="btnTambahContainer">
+        <button class="btn-tambah-berita" onclick="bukaModalBerita()">+ Buat Informasi / Berita Baru</button>
       </div>
+
+      <!-- DAFTAR BERITA -->
+      <div id="daftarInformasiSiswa" class="news-grid">
+        <!-- Berita dimuat otomatis dari Firebase -->
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL POPUP FORM POSTING -->
+  <div id="modalBerita" class="modal">
+    <div class="modal-content">
+      <h3>📢 Tambah Informasi / Berita Baru</h3>
+      <form id="formBerita" onsubmit="simpanBeritaBaru(event)">
+        <div class="form-group">
+          <label>Judul Berita / Pengumuman</label>
+          <input type="text" id="inputJudul" placeholder="Contoh: Jadwal Pertemuan Rutin Pekan Ini" required />
+        </div>
+        <div class="form-group">
+          <label>Penulis / Instansi</label>
+          <input type="text" id="inputPenulis" value="Pembina / Pengurus IRMA" required />
+        </div>
+        <div class="form-group">
+          <label>Isi Pengumuman Lengkap</label>
+          <textarea id="inputIsi" rows="5" placeholder="Tulis isi pengumuman di sini..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">🚀 Publikasikan Sekarang</button>
+        <button type="button" class="btn-batal" onclick="tutupModalBerita()">Batal</button>
+      </form>
     </div>
   </div>
 
