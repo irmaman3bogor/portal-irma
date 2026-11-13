@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Posting Informasi & Berita - Admin IRMA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
+    body { background-color: #fcf8f2; margin: 0; padding: 20px; color: #2c2c2c; }
+    .container { max-width: 900px; margin: 0 auto; }
+    .box { background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); margin-bottom: 20px; border: 1px solid #faedcd; }
+    .box h3 { margin-top: 0; color: #bc6c25; border-bottom: 2px solid #fefae0; padding-bottom: 10px; }
+    
+    .form-group { margin-bottom: 15px; }
+    .form-group label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+    .form-group input, .form-group textarea { width: 100%; padding: 12px; border: 1px solid #d4a373; border-radius: 8px; font-size: 14px; background: #fffdf9; }
+    .btn-submit { background: #2a9d8f; color: white; border: none; padding: 12px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 14px; width: 100%; }
+    .btn-submit:hover { background: #21867a; }
+
+    .news-item { background: #fffdf9; padding: 15px; border-radius: 8px; border: 1px solid #faedcd; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start; }
+    .news-title { font-weight: 700; color: #bc6c25; margin: 0 0 5px; }
+    .news-date { font-size: 11px; color: #777; }
+    .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 5px; cursor: pointer; font-size: 11px; }
+  </style>
+
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.postingInformasi = async function(e) {
+      e.preventDefault();
+      const judul = document.getElementById("judulBerita").value;
+      const isi = document.getElementById("isiBerita").value;
+      const penulis = document.getElementById("penulisBerita").value || "Pengurus IRMA";
+
+      try {
+        await addDoc(collection(db, "informasi_irma"), {
+          judul,
+          isi,
+          penulis,
+          waktu: serverTimestamp(),
+          tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
+        });
+        alert("✅ Informasi / Berita berhasil diposting ke akun anggota!");
+        document.getElementById("formBerita").reset();
+        muatDaftarAdmin();
+      } catch (err) {
+        alert("❌ Gagal memposting: " + err.message);
+      }
+    }
+
+    async function muatDaftarAdmin() {
+      const listContainer = document.getElementById("daftarBeritaAdmin");
+      listContainer.innerHTML = "Memuat daftar postingan...";
+      try {
+        const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"));
+        const snapshot = await getDocs(q);
+        
+        if (snapshot.empty) {
+          listContainer.innerHTML = "<p style='color:#777;'>Belum ada informasi yang diposting.</p>";
+          return;
+        }
+
+        let html = "";
+        snapshot.forEach((itemDoc) => {
+          const data = itemDoc.data();
+          html += `
+            <div class="news-item">
+              <div>
+                <p class="news-title">${data.judul}</p>
+                <p class="news-date">📅 ${data.tanggal} | Oleh: ${data.penulis}</p>
+              </div>
+              <button class="btn-hapus" onclick="hapusBerita('${itemDoc.id}')">Hapus</button>
+            </div>
+          `;
+        });
+        listContainer.innerHTML = html;
+      } catch (err) {
+        listContainer.innerHTML = "Gagal memuat daftar berita.";
+      }
+    }
+
+    window.hapusBerita = async function(id) {
+      if (!confirm("Yakin ingin menghapus informasi ini?")) return;
+      try {
+        await deleteDoc(doc(db, "informasi_irma", id));
+        alert("Berita dihapus!");
+        muatDaftarAdmin();
+      } catch (err) {
+        alert("Gagal menghapus: " + err.message);
+      }
+    }
+
+    muatDaftarAdmin();
+  </script>
+</head>
+<body>
+
+  <div class="container">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+      <h2>📢 Panel Kelola Informasi & Berita IRMA</h2>
+      <a href="bendahara.html" style="background:#bc6c25; color:white; padding:8px 15px; border-radius:6px; text-decoration:none; font-weight:700; font-size:13px;">Kembali ke Dashboard</a>
+    </div>
+
+    <!-- FORM POSTING -->
+    <div class="box">
+      <h3>+ Buat Pengumuman / Berita Baru</h3>
+      <form id="formBerita" onsubmit="postingInformasi(event)">
+        <div class="form-group">
+          <label>Judul Pengumuman / Berita</label>
+          <input type="text" id="judulBerita" placeholder="Contoh: Jadwal Kegiatan Pesantren Kilat Ramadhan" required />
+        </div>
+        <div class="form-group">
+          <label>Nama Pembuat / Penulis</label>
+          <input type="text" id="penulisBerita" value="Pembina / Pengurus IRMA" required />
+        </div>
+        <div class="form-group">
+          <label>Isi Berita / Pengumuman Lengkap</label>
+          <textarea id="isiBerita" rows="6" placeholder="Tulis isi pengumuman secara lengkap di sini..." required></textarea>
+        </div>
+        <button type="submit" class="btn-submit">🚀 Publikasikan ke Halaman Anggota</button>
+      </form>
+    </div>
+
+    <!-- KELOLA / HAPUS BERITA -->
+    <div class="box">
+      <h3>Daftar Informasi yang Telah Diposting</h3>
+      <div id="daftarBeritaAdmin"></div>
+    </div>
+  </div>
+
+</body>
+</html>
