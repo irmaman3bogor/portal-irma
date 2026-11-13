@@ -9,6 +9,7 @@
     * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; }
     body { background-color: #f4f6f9; margin: 0; display: flex; height: 100vh; overflow: hidden; }
     
+    /* SIDEBAR */
     .sidebar { width: 260px; background-color: #0b3c29; color: white; display: flex; flex-direction: column; padding: 20px 0; box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
     .sidebar-logo { text-align: center; padding: 0 20px 20px; border-bottom: 1px solid rgba(255,255,255,0.1); }
     .sidebar-logo img { width: 50px; height: 50px; object-fit: contain; }
@@ -18,14 +19,25 @@
     .menu-item a { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #adb5bd; text-decoration: none; font-size: 13px; font-weight: 600; transition: 0.2s; }
     .menu-item.active a, .menu-item a:hover { background-color: rgba(255,255,255,0.1); color: white; border-left: 4px solid #ffb703; }
 
+    /* MAIN CONTENT */
     .main-content { flex-grow: 1; display: flex; flex-direction: column; overflow-y: auto; }
     .topbar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    
+    .topbar-left { display: flex; align-items: center; gap: 20px; }
     .topbar h2 { margin: 0; color: #0b3c29; font-size: 18px; }
+    
+    /* TOMBOL KEMBALI */
+    .btn-kembali { background: #6c757d; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 700; display: flex; align-items: center; gap: 5px; transition: 0.2s; }
+    .btn-kembali:hover { background: #5a6268; }
+    
     .btn-keluar { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
+    .btn-keluar:hover { background: #c0392b; }
 
     .content-body { padding: 30px; max-width: 900px; width: 100%; margin: 0 auto; }
     .btn-tambah-berita { background: #2a9d8f; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; margin-bottom: 20px; display: inline-flex; align-items: center; gap: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+    .btn-tambah-berita:hover { background: #21867a; }
 
+    /* MODAL */
     .modal { display: none; position: fixed; z-index: 999; left: 0; top: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
     .modal-content { background: white; padding: 25px; border-radius: 12px; width: 100%; max-width: 500px; }
     .modal-content h3 { color: #0b3c29; margin-top: 0; border-bottom: 2px solid #e9ecef; padding-bottom: 10px; }
@@ -35,6 +47,7 @@
     .btn-submit { background: #0b3c29; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; width: 100%; cursor: pointer; }
     .btn-batal { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: 600; }
 
+    /* KARTU BERITA */
     .news-grid { display: grid; grid-template-columns: 1fr; gap: 20px; }
     .news-card { background: white; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.05); border-left: 5px solid #0b3c29; }
     .news-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; }
@@ -43,6 +56,7 @@
     .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; }
     .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; }
     .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
+    .btn-hapus:hover { background: #c0392b; }
   </style>
 
   <script type="module">
@@ -88,7 +102,8 @@
       try {
         const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"));
         const snap = await getDocs(q);
-        if (snap.empty) { container.innerHTML = `<div style="background:white; padding:30px; text-align:center; border-radius:12px;">Belum ada berita.</div>`; return; }
+        if (snap.empty) { container.innerHTML = `<div style="background:white; padding:30px; text-align:center; border-radius:12px; color:#777;">Belum ada berita.</div>`; return; }
+        
         let html = "";
         snap.forEach((d) => {
           const item = d.data();
@@ -106,7 +121,7 @@
             </div>`;
         });
         container.innerHTML = html;
-      } catch (err) { container.innerHTML = `<p style="color:red;">Gagal memuat.</p>`; }
+      } catch (err) { container.innerHTML = `<p style="color:red; text-align:center;">Gagal memuat.</p>`; }
     }
 
     window.hapusPosting = async function(id) {
@@ -117,6 +132,8 @@
   </script>
 </head>
 <body>
+
+  <!-- SIDEBAR (Hanya Logo dan Menu Kelola Informasi) -->
   <div class="sidebar">
     <div class="sidebar-logo">
       <img src="logo.png" alt="Logo">
@@ -124,15 +141,20 @@
       <p>MAN 3 BOGOR</p>
     </div>
     <ul class="menu-list">
-      <li class="menu-item"><a href="bendahara.html">🏠 Dashboard</a></li>
+      <!-- Menu Dashboard & Kegiatan sudah dihilangkan -->
       <li class="menu-item active"><a href="admin-informasi.html">📢 Kelola Informasi</a></li>
-      <li class="menu-item"><a href="admin-kegiatan.html">📅 Kelola Kegiatan</a></li>
     </ul>
   </div>
 
+  <!-- KONTEN UTAMA -->
   <div class="main-content">
+    
+    <!-- TOPBAR DENGAN TOMBOL KEMBALI -->
     <div class="topbar">
-      <h2>📢 Panel Kelola Informasi (Admin)</h2>
+      <div class="topbar-left">
+        <a href="beranda.html" class="btn-kembali">← Kembali ke Beranda</a>
+        <h2>📢 Panel Kelola Informasi (Admin)</h2>
+      </div>
       <button onclick="localStorage.clear(); window.location.href='index.html';" class="btn-keluar">Keluar</button>
     </div>
 
@@ -142,6 +164,7 @@
     </div>
   </div>
 
+  <!-- MODAL POPUP FORM POSTING -->
   <div id="modalBerita" class="modal">
     <div class="modal-content">
       <h3>Tambah Berita Baru</h3>
@@ -163,5 +186,6 @@
       </form>
     </div>
   </div>
+
 </body>
 </html>
