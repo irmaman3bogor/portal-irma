@@ -38,7 +38,7 @@
 
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-    import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+    import { getFirestore, collection, getDocs, query, where, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
     
     const firebaseConfig = {
       apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
@@ -51,37 +51,62 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Daftar Bulan untuk ditampilkan
-    const bulanList = ["Juli", "Agustus", "September", "Oktober", "November", "Desember", "Januari", "Februari", "Maret", "April", "Mei"];
+    // Daftar Bulan sesuai dengan bendahara.html
+    const bulanList = ["juli", "agustus", "september", "oktober", "november", "desember", "januari", "februari", "maret", "april", "mei", "juni"];
 
     window.addEventListener("DOMContentLoaded", async () => {
       const container = document.getElementById("tabelKas");
       
-      // Ambil UID Siswa dari localStorage (dikirim oleh beranda-siswa.html)
+      // Ambil UID Siswa dari localStorage
       const uidSiswa = localStorage.getItem("irmaUserId");
+      // Ambil NIS dari localStorage (karena di index.html kita simpan input sebagai nis)
+      const nisSiswa = localStorage.getItem("userLoginData") ? JSON.parse(localStorage.getItem("userLoginData")).nis : null;
 
-      if (!uidSiswa) {
+      if (!uidSiswa && !nisSiswa) {
         container.innerHTML = `<div class="error-box">Sesi login tidak ditemukan. Silakan login ulang.</div>`;
         return;
       }
 
       try {
-        // PENTING: Asumsi nama collection di database Anda adalah "data_siswa"
-        // dan nama dokumennya adalah UID Siswa.
-        const docRef = doc(db, "data_siswa", uidSiswa);
-        const docSnap = await getDoc(docRef);
+        let dataSiswa = null;
+        let siswaId = null;
 
-        if (!docSnap.exists()) {
-          container.innerHTML = `<div class="error-box">Data siswa tidak ditemukan di database. Pastikan Anda sudah mengisi Entri Biodata.</div>`;
+        // 1. CARI DATA SISWA BERDASARKAN NIS (Karena di bendahara.html NISN yang diinput)
+        if (nisSiswa) {
+          const qSiswa = query(collection(db, "biodata_siswa"), where("nisn", "==", nisSiswa));
+          const snapSiswa = await getDocs(qSiswa);
+          if (!snapSiswa.empty) {
+            dataSiswa = snapSiswa.docs[0].data();
+            siswaId = snapSiswa.docs[0].id;
+          }
+        }
+
+        // Jika tidak ketemu berdasarkan NIS, coba cari berdasarkan UID
+        if (!dataSiswa && uidSiswa) {
+          const docRef = doc(db, "biodata_siswa", uidSiswa);
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            dataSiswa = docSnap.data();
+            siswaId = uidSiswa;
+          }
+        }
+
+        if (!dataSiswa) {
+          container.innerHTML = `<div class="error-box">Data siswa tidak ditemukan. Pastikan NISN Anda sudah didaftarkan oleh Bendahara di menu Kas Kelas.</div>`;
           return;
         }
 
-        const dataSiswa = docSnap.data();
-        const namaSiswa = dataSiswa.nama_lengkap || dataSiswa.nama || "Siswa";
+        const namaSiswa = dataSiswa.nama || "Siswa";
+
+        // 2. AMBIL DATA IURAN BERDASARKAN ID SISWA (sesuai struktur bendahara.html)
+        const iuranRef = doc(db, "iuran_bulanan", siswaId);
+        const iuranSnap = await getDoc(iuranRef);
         
-        // Asumsi: Data kas disimpan di dalam field bernama "kas" (object)
-        // Contoh format di Firebase: kas: { "Juli": true, "Agustus": false, ... }
-        const dataKas = dataSiswa.kas || {};
+        let dataKas = {};
+        if (iuranSnap.exists()) {
+          const iuranData = iuranSnap.data();
+          dataKas = iuranData.bulan || {};
+        }
 
         // Hitung total lunas
         let totalLunas = 0;
@@ -111,11 +136,14 @@
           const sudahBayar = dataKas[bulan] === true;
           const statusClass = sudahBayar ? 'lunas' : 'belum';
           const statusText = sudahBayar ? 'Lunas' : 'Belum Bayar';
+          
+          // Buat huruf depan bulan jadi kapital
+          const namaBulan = bulan.charAt(0).toUpperCase() + bulan.slice(1);
 
           html += `
             <tr>
               <td>${index + 1}</td>
-              <td style="font-weight: 600;">${bulan}</td>
+              <td style="font-weight: 600;">${namaBulan}</td>
               <td><span class="status ${statusClass}">${statusText}</span></td>
             </tr>
           `;
