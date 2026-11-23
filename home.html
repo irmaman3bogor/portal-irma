@@ -144,7 +144,7 @@
       border-left: 4px solid #0a3622;
     }
     .content-card .title { font-weight: 700; color: #0a3622; font-size: 13px; margin-bottom: 4px; }
-    .content-card .desc { font-size: 12.5px; color: #555; line-height: 1.5; }
+    .content-card .desc { font-size: 12.5px; color: #555; line-height: 1.5; white-space: pre-line; }
     .content-card .meta { font-size: 11px; color: #999; margin-top: 4px; font-style: italic; }
 
     /* --- RESPONSIF HP --- */
@@ -167,7 +167,7 @@
     }
   </style>
 
-  <!-- SCRIPT FIREBASE -->
+  <!-- SCRIPT FIREBASE TERPADU (INFO + KAJIAN + HASANAH + UMUM) -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -184,30 +184,76 @@
     const db = getFirestore(app);
 
     window.addEventListener("DOMContentLoaded", async () => {
-      const container = document.getElementById("infoTerbaru");
+      
+      // 1. Ambil Informasi Terbaru
+      const containerInfo = document.getElementById("infoTerbaru");
       try {
-        const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
-        const snap = await getDocs(q);
-        
+        const qInfo = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
+        const snapInfo = await getDocs(qInfo);
+        if (snapInfo.empty) {
+          containerInfo.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`;
+        } else {
+          let html = "";
+          snapInfo.forEach(doc => {
+            const item = doc.data();
+            html += `
+              <a href="publik-informasi.html" class="info-card">
+                <div class="info-title">${item.judul}</div>
+                <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
+                <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
+              </a>
+            `;
+          });
+          containerInfo.innerHTML = html;
+        }
+      } catch (err) { containerInfo.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`; }
+
+      // Helper untuk render list konten (Kajian, Hasanah, Umum)
+      const renderList = (snap, containerId) => {
+        const container = document.getElementById(containerId);
         if (snap.empty) {
-          container.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`;
+          container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
           return;
         }
-
         let html = "";
         snap.forEach(doc => {
           const item = doc.data();
           html += `
-            <a href="publik-informasi.html" class="info-card">
-              <div class="info-title">${item.judul}</div>
-              <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
-              <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
-            </a>
+            <div class="content-card">
+              <div class="title">${item.judul}</div>
+              <div class="desc">${item.isi}</div>
+              <div class="meta">📅 ${item.tanggal || '-'}</div>
+            </div>
           `;
         });
         container.innerHTML = html;
-      } catch (err) {
-        container.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`;
+      };
+
+      // 2. Ambil Data Kajian
+      try {
+        const qKajian = query(collection(db, "kajian_irma"), orderBy("waktu", "desc"), limit(3));
+        const snapKajian = await getDocs(qKajian);
+        renderList(snapKajian, "listKajian");
+      } catch(e) { 
+        document.getElementById("listKajian").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
+      }
+
+      // 3. Ambil Data Hasanah
+      try {
+        const qHasanah = query(collection(db, "hasanah_irma"), orderBy("waktu", "desc"), limit(3));
+        const snapHasanah = await getDocs(qHasanah);
+        renderList(snapHasanah, "listHasanah");
+      } catch(e) { 
+        document.getElementById("listHasanah").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
+      }
+
+      // 4. Ambil Data Umum
+      try {
+        const qUmum = query(collection(db, "umum_irma"), orderBy("waktu", "desc"), limit(3));
+        const snapUmum = await getDocs(qUmum);
+        renderList(snapUmum, "listUmum");
+      } catch(e) { 
+        document.getElementById("listUmum").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
       }
     });
   </script>
@@ -255,7 +301,7 @@
         <p>Sistem Informasi Organisasi Ikatan Remaja Masjid MAN 3 Bogor. Silakan akses menu di sebelah kiri untuk melihat Visi Misi, Informasi terbaru, dan Program Kerja kami.</p>
       </div>
 
-            <!-- PANEL INFO 4 TAB -->
+      <!-- PANEL INFO 4 TAB -->
       <div class="info-panel">
         <div class="tabs">
           <button class="tab active" onclick="showTab('sholat')">🕌 Sholat</button>
@@ -264,17 +310,16 @@
           <button class="tab" onclick="showTab('umum')">💡 Umum</button>
         </div>
 
-        <!-- TAB 1: JADWAL SHOLAT (Tetap hardcode) -->
+        <!-- TAB 1: JADWAL SHOLAT -->
         <div id="tab-sholat" class="tab-content active">
           <h3>🕌 Jadwal Sholat — Kab. Bogor</h3>
           <div class="sholat-grid" id="sholatGrid"></div>
           <div class="sholat-note">Sumber: Kemenag RI · 23 Nov 2026</div>
         </div>
 
-        <!-- TAB 2: KAJIAN ISLAMI (Dinamis dari Firebase) -->
+        <!-- TAB 2: KAJIAN ISLAMI (Dinamis Firebase) -->
         <div id="tab-kajian" class="tab-content">
           <h3>📖 Kajian Islami</h3>
-          <!-- Link NU Online tetap ada -->
           <a href="https://www.nu.or.id/" target="_blank" rel="noopener noreferrer" class="content-card" style="display: block; text-decoration: none; color: inherit; margin-bottom: 15px; border-left-color: #2a9d8f;">
             <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
               <span>Buka Kajian NU Online</span>
@@ -284,13 +329,12 @@
             <div class="meta">🔗 www.nu.or.id</div>
           </a>
           
-          <!-- Wadah Data Firebase -->
           <div id="listKajian">
             <p style="color:#777; font-size:12px;">Memuat data...</p>
           </div>
         </div>
 
-        <!-- TAB 3: HASANAH KEISLAMAN (Dinamis dari Firebase) -->
+        <!-- TAB 3: HASANAH KEISLAMAN (Dinamis Firebase) -->
         <div id="tab-hasanah" class="tab-content">
           <h3>✨ Hasanah Keislaman</h3>
           <div id="listHasanah">
@@ -298,7 +342,7 @@
           </div>
         </div>
 
-        <!-- TAB 4: PENGETAHUAN UMUM (Dinamis dari Firebase) -->
+        <!-- TAB 4: PENGETAHUAN UMUM (Dinamis Firebase) -->
         <div id="tab-umum" class="tab-content">
           <h3>💡 Pengetahuan Umum</h3>
           <div id="listUmum">
@@ -320,11 +364,8 @@
     </div>
   </div>
 
-  <!-- ============================================== -->
   <!-- SCRIPT TERPADU (SIDEBAR + TAB + JADWAL SHOLAT) -->
-  <!-- ============================================== -->
   <script>
-    // 1. Fungsi Buka/Tutup Sidebar (Mobile)
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebarOverlay");
@@ -337,23 +378,17 @@
       document.getElementById("sidebarOverlay").classList.remove("active");
     }
 
-    // 2. Fungsi Ganti Tab
     function showTab(tabName) {
-      // Sembunyikan semua konten tab
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      // Hapus status aktif dari semua tombol tab
       document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
       
-      // Tampilkan konten yang dipilih
       const targetContent = document.getElementById('tab-' + tabName);
       if (targetContent) targetContent.classList.add('active');
       
-      // Beri status aktif ke tombol yang diklik
       const targetButton = document.querySelector(`.tab[onclick*="'${tabName}'"]`);
       if (targetButton) targetButton.classList.add('active');
     }
 
-    // 3. Fungsi Render Jadwal Sholat & Highlight
     const jadwalSholat = [
       { label: "Subuh",   time: "04:05" },
       { label: "Dzuhur",  time: "11:43" },
@@ -387,7 +422,6 @@
       `).join("");
     }
 
-    // Jalankan saat halaman dimuat
     document.addEventListener("DOMContentLoaded", () => {
       renderSholat();
       setInterval(renderSholat, 60000); 
