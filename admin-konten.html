@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin - Posting Konten IRMA</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+    
+    * { box-sizing: border-box; font-family: 'Montserrat', sans-serif; margin: 0; padding: 0; }
+    body { background: #f4f6f9; padding: 20px; display: flex; justify-content: center; min-height: 100vh; }
+    
+    .container { 
+      background: white; 
+      padding: 30px 35px; 
+      border-radius: 16px; 
+      width: 100%; 
+      max-width: 600px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1); 
+      height: fit-content;
+    }
+    
+    .header { text-align: center; margin-bottom: 25px; border-bottom: 2px solid #e0e0e0; padding-bottom: 15px; }
+    .header h2 { color: #0a3622; font-size: 22px; margin-bottom: 5px; }
+    .header p { color: #666; font-size: 13px; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; font-weight: 700; font-size: 13px; color: #0a3622; margin-bottom: 6px; }
+    
+    input, select, textarea { 
+      width: 100%; 
+      padding: 12px 14px; 
+      border: 1.5px solid #ccc; 
+      border-radius: 8px; 
+      font-size: 14px; 
+      transition: 0.2s;
+    }
+    input:focus, select:focus, textarea:focus { outline: none; border-color: #d4af37; }
+    
+    textarea { resize: vertical; min-height: 120px; }
+    
+    .help-text { font-size: 11px; color: #888; margin-top: 4px; display: block; }
+
+    .btn-group { display: flex; gap: 10px; margin-top: 25px; }
+    
+    button { 
+      flex: 1;
+      padding: 14px; 
+      border: none; 
+      border-radius: 8px; 
+      font-size: 15px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      transition: 0.2s; 
+    }
+    
+    .btn-save { background: #0a3622; color: #d4af37; }
+    .btn-save:hover { background: #0d4a2e; transform: translateY(-1px); }
+    
+    .btn-back { background: #eef1f4; color: #333; text-decoration: none; text-align: center; line-height: 1.5; }
+    .btn-back:hover { background: #dde3e8; }
+
+    /* Alert Box */
+    .alert { display: none; padding: 12px; border-radius: 8px; margin-bottom: 20px; font-size: 14px; text-align: center; font-weight: 600; }
+    .alert-success { background: #d4edda; color: #155724; display: block; border: 1px solid #c3e6cb; }
+    .alert-error { background: #f8d7da; color: #721c24; display: block; border: 1px solid #f5c6cb; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="header">
+      <h2>📝 Posting Konten Baru</h2>
+      <p>Portal IRMA MAN 3 Bogor</p>
+    </div>
+    
+    <!-- Wadah Pesan Sukses/Error -->
+    <div id="alertBox" class="alert"></div>
+
+    <div class="form-group">
+      <label>Pilih Kategori Konten</label>
+      <select id="kategori">
+        <option value="kajian_irma">📖 Kajian Islami</option>
+        <option value="hasanah_irma">✨ Hasanah Keislaman</option>
+        <option value="umum_irma">💡 Pengetahuan Umum</option>
+      </select>
+    </div>
+
+    <div class="form-group">
+      <label>Judul Konten</label>
+      <input type="text" id="judul" placeholder="Contoh: Keutamaan Menuntut Ilmu">
+    </div>
+
+    <div class="form-group">
+      <label>Isi / Deskripsi</label>
+      <textarea id="isi" placeholder="Tulis isi teks di sini..."></textarea>
+    </div>
+
+    <div class="form-group">
+      <label>Link Website (Opsional)</label>
+      <input type="url" id="link" placeholder="https://...">
+      <span class="help-text">Biarkan kosong jika konten ini tidak memiliki link ke website lain.</span>
+    </div>
+
+    <div class="btn-group">
+      <a href="home.html" class="btn-back">← Kembali ke Home</a>
+      <button class="btn-save" onclick="simpanData()">Posting Sekarang 🚀</button>
+    </div>
+  </div>
+
+  <!-- SCRIPT FIREBASE -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+    import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyBjA8-_2it1AXMrEH7AcnprCasmKj0Mzmc",
+      authDomain: "portal-irma-man-3-bogor.firebaseapp.com",
+      projectId: "portal-irma-man-3-bogor",
+      storageBucket: "portal-irma-man-3-bogor.firebasestorage.app",
+      messagingSenderId: "582215464487",
+      appId: "1:582215464487:web:4d0583016ebec700dec002"
+    };
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    window.simpanData = async function() {
+      const kategori = document.getElementById('kategori').value;
+      const judul = document.getElementById('judul').value.trim();
+      const isi = document.getElementById('isi').value.trim();
+      const link = document.getElementById('link').value.trim();
+      const alertBox = document.getElementById('alertBox');
+      const btnSave = document.querySelector('.btn-save');
+
+      if (!judul || !isi) {
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = 'Judul dan Isi tidak boleh kosong!';
+        return;
+      }
+
+      try {
+        // Ubah tombol jadi loading
+        btnSave.textContent = 'Menyimpan... ⏳';
+        btnSave.disabled = true;
+        
+        alertBox.className = 'alert';
+        alertBox.style.display = 'none';
+
+        // Simpan ke Firebase (Hanya Judul, Isi, Link. Tanpa Waktu/Tanggal)
+        await addDoc(collection(db, kategori), {
+          judul: judul,
+          isi: isi,
+          link: link
+        });
+
+        // Jika sukses
+        alertBox.className = 'alert alert-success';
+        alertBox.textContent = '✅ Berhasil diposting! Silakan cek halaman Home.';
+        
+        // Kosongkan form
+        document.getElementById('judul').value = '';
+        document.getElementById('isi').value = '';
+        document.getElementById('link').value = '';
+
+      } catch (error) {
+        console.error(error);
+        alertBox.className = 'alert alert-error';
+        alertBox.textContent = '❌ Gagal memposting: ' + error.message;
+      } finally {
+        // Kembalikan tombol ke normal
+        btnSave.textContent = 'Posting Sekarang 🚀';
+        btnSave.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
