@@ -25,10 +25,8 @@
     .topbar-left { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
     .topbar h2 { margin: 0; color: #0b3c29; font-size: 18px; }
     
-    /* TOMBOL KEMBALI */
     .btn-kembali { background: #6c757d; color: white; text-decoration: none; padding: 8px 15px; border-radius: 6px; font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px; transition: 0.2s; border: none; cursor: pointer; }
     .btn-kembali:hover { background: #5a6268; }
-    
     .btn-keluar { background: #e74c3c; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 700; cursor: pointer; font-size: 12px; }
 
     .content-body { padding: 30px; max-width: 900px; width: 100%; margin: 0 auto; }
@@ -45,6 +43,12 @@
     .foto-preview-box { margin-top: 10px; display: none; }
     .foto-preview-box img { width: 100%; max-height: 220px; object-fit: cover; border-radius: 8px; border: 1px solid #ddd; }
     .btn-hapus-foto { background: #e74c3c; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 11px; font-weight: 600; cursor: pointer; margin-top: 6px; }
+
+    /* Dokumen lampiran */
+    .dok-info-box { display: none; margin-top: 10px; background: #eef7f4; border: 1px solid #cfe6de; border-radius: 8px; padding: 10px 12px; font-size: 12px; color: #0b3c29; align-items: center; justify-content: space-between; gap: 10px; }
+    .dok-info-box .dok-nama { font-weight: 700; word-break: break-all; }
+    .help-text { font-size: 11px; color: #888; margin-top: 4px; display: block; }
+
     .btn-submit { background: #0b3c29; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; width: 100%; cursor: pointer; }
     .btn-submit:disabled { background: #7f8c8d; cursor: not-allowed; }
     .btn-batal { background: #7f8c8d; color: white; border: none; padding: 8px; border-radius: 8px; width: 100%; margin-top: 5px; cursor: pointer; font-weight: 600; }
@@ -56,17 +60,17 @@
     .news-header { padding: 20px 20px 10px; display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; }
     .news-title { margin: 0; color: #0b3c29; font-size: 18px; font-weight: 700; }
     .news-date { font-size: 11px; color: #777; background: #e9ecef; padding: 4px 8px; border-radius: 4px; white-space: nowrap; }
-    .news-content { padding: 0 20px 20px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; word-break: break-word; }
+    .news-content { padding: 0 20px 15px; color: #444; font-size: 14px; line-height: 1.6; white-space: pre-line; word-break: break-word; }
+    .news-dok { margin: 0 20px 18px; display: inline-flex; align-items: center; gap: 8px; background: #fff8e1; border: 1px solid #f1d98a; color: #0b3c29; text-decoration: none; padding: 9px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; word-break: break-all; }
+    .news-dok:hover { background: #ffefb8; }
     .news-footer { padding: 10px 20px; background: #f8f9fa; border-top: 1px solid #eee; font-size: 12px; color: #666; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; }
     
-    /* GRUP TOMBOL AKSI */
     .action-buttons { display: flex; gap: 8px; }
     .btn-edit { background: #f39c12; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .btn-edit:hover { background: #d68910; }
     .btn-hapus { background: #e74c3c; color: white; border: none; padding: 5px 10px; border-radius: 4px; cursor: pointer; font-size: 11px; font-weight: 600; }
     .btn-hapus:hover { background: #c0392b; }
 
-    /* RESPONSIF HP */
     @media (max-width: 768px) {
       body { flex-direction: column; height: auto; overflow: auto; }
       .sidebar { width: 100%; padding: 12px 15px; }
@@ -101,11 +105,25 @@
     const db = getFirestore(app);
     const storage = getStorage(app);
 
+    // Foto
     let fotoLamaUrl = "";
     let hapusFotoFlag = false;
 
+    // Dokumen lampiran
+    let dokLamaUrl = "";
+    let dokLamaNama = "";
+    let hapusDokFlag = false;
+    const MAKS_DOK_MB = 10;
+    const EKSTENSI_DOK = ["pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"];
+
+    // Cegah karakter HTML dari data masuk ke tampilan
+    function esc(s) {
+      return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
     window.addEventListener("DOMContentLoaded", () => { muatBerita(); });
 
+    // ================= FOTO =================
     function tampilkanPreview(src) {
       const box = document.getElementById("fotoPreviewBox");
       const img = document.getElementById("fotoPreviewImg");
@@ -124,19 +142,16 @@
         tampilkanPreview(hapusFotoFlag ? "" : fotoLamaUrl);
         return;
       }
-
       if (!file.type.startsWith("image/")) {
         alert("⚠️ Harap pilih file gambar (JPG, PNG, WEBP).");
         event.target.value = "";
         return;
       }
-
       if (file.size > 3 * 1024 * 1024) {
         alert("⚠️ Ukuran foto maksimal 3 MB.");
         event.target.value = "";
         return;
       }
-
       hapusFotoFlag = false;
       const reader = new FileReader();
       reader.onload = (e) => tampilkanPreview(e.target.result);
@@ -150,6 +165,48 @@
       tampilkanPreview("");
     };
 
+    // ================= DOKUMEN =================
+    function tampilkanDok(nama) {
+      const box = document.getElementById("dokInfoBox");
+      const label = document.getElementById("dokNamaLabel");
+      if (nama) {
+        label.textContent = nama;
+        box.style.display = "flex";
+      } else {
+        label.textContent = "";
+        box.style.display = "none";
+      }
+    }
+
+    window.handleDokChange = function(event) {
+      const file = event.target.files[0];
+      if (!file) {
+        tampilkanDok(hapusDokFlag ? "" : dokLamaNama);
+        return;
+      }
+      const ext = file.name.split(".").pop().toLowerCase();
+      if (!EKSTENSI_DOK.includes(ext)) {
+        alert("⚠️ Format dokumen harus: " + EKSTENSI_DOK.join(", ").toUpperCase() + ".");
+        event.target.value = "";
+        return;
+      }
+      if (file.size > MAKS_DOK_MB * 1024 * 1024) {
+        alert("⚠️ Ukuran dokumen maksimal " + MAKS_DOK_MB + " MB.");
+        event.target.value = "";
+        return;
+      }
+      hapusDokFlag = false;
+      tampilkanDok("📄 " + file.name + " (siap diunggah)");
+    };
+
+    window.hapusDokTerpilih = function() {
+      document.getElementById("inputDokumen").value = "";
+      dokLamaUrl = "";
+      dokLamaNama = "";
+      hapusDokFlag = true;
+      tampilkanDok("");
+    };
+
     // ================= MODAL TAMBAH =================
     window.bukaModalBerita = () => { 
       document.getElementById("formBerita").reset();
@@ -158,6 +215,10 @@
       fotoLamaUrl = "";
       hapusFotoFlag = false;
       tampilkanPreview("");
+      dokLamaUrl = "";
+      dokLamaNama = "";
+      hapusDokFlag = false;
+      tampilkanDok("");
       document.getElementById("modalBerita").style.display = "flex"; 
     };
     
@@ -165,9 +226,9 @@
       document.getElementById("modalBerita").style.display = "none";
     };
 
-    async function uploadFotoKeStorage(file) {
+    async function uploadKeStorage(file, folder) {
       const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, "_");
-      const filePath = `informasi_irma/${Date.now()}_${safeName}`;
+      const filePath = `${folder}/${Date.now()}_${safeName}`;
       const storageRef = ref(storage, filePath);
       await uploadBytes(storageRef, file);
       return await getDownloadURL(storageRef);
@@ -182,14 +243,24 @@
       const isi = document.getElementById("inputIsi").value.trim();
       const penulis = document.getElementById("inputPenulis").value.trim() || "Pengurus / Pembina IRMA";
       const fileFoto = document.getElementById("inputFoto").files[0];
+      const fileDok = document.getElementById("inputDokumen").files[0];
 
       btnSubmit.disabled = true;
-      btnSubmit.innerText = fileFoto ? "⏳ Mengupload foto & menyimpan..." : "⏳ Menyimpan...";
+      btnSubmit.innerText = (fileFoto || fileDok) ? "⏳ Mengupload file & menyimpan..." : "⏳ Menyimpan...";
 
       try {
+        // Foto
         let finalFotoUrl = hapusFotoFlag ? "" : fotoLamaUrl;
         if (fileFoto) {
-          finalFotoUrl = await uploadFotoKeStorage(fileFoto);
+          finalFotoUrl = await uploadKeStorage(fileFoto, "informasi_irma");
+        }
+
+        // Dokumen
+        let finalDokUrl = hapusDokFlag ? "" : dokLamaUrl;
+        let finalDokNama = hapusDokFlag ? "" : dokLamaNama;
+        if (fileDok) {
+          finalDokUrl = await uploadKeStorage(fileDok, "dokumen_irma");
+          finalDokNama = fileDok.name;
         }
 
         if (docId) {
@@ -197,7 +268,9 @@
             judul,
             isi,
             penulis,
-            fotoUrl: finalFotoUrl
+            fotoUrl: finalFotoUrl,
+            dokumenUrl: finalDokUrl,
+            dokumenNama: finalDokNama
           });
           alert("✅ Berita berhasil diperbarui!");
         } else {
@@ -206,6 +279,8 @@
             isi,
             penulis,
             fotoUrl: finalFotoUrl,
+            dokumenUrl: finalDokUrl,
+            dokumenNama: finalDokNama,
             waktu: serverTimestamp(),
             tanggal: new Date().toLocaleDateString("id-ID", { day: 'numeric', month: 'long', year: 'numeric' })
           });
@@ -239,6 +314,11 @@
           hapusFotoFlag = false;
           tampilkanPreview(fotoLamaUrl);
 
+          dokLamaUrl = data.dokumenUrl || "";
+          dokLamaNama = data.dokumenNama || "";
+          hapusDokFlag = false;
+          tampilkanDok(dokLamaUrl ? "📄 " + (dokLamaNama || "Dokumen terlampir") : "");
+
           document.getElementById("modalTitle").innerText = "Edit Berita";
           document.getElementById("modalBerita").style.display = "flex";
         } else {
@@ -264,18 +344,22 @@
         snap.forEach((d) => {
           const item = d.data();
           const fotoHtml = item.fotoUrl
-            ? `<img src="${item.fotoUrl}" alt="${item.judul}" class="news-foto" loading="lazy" />`
+            ? `<img src="${esc(item.fotoUrl)}" alt="${esc(item.judul)}" class="news-foto" loading="lazy" />`
+            : "";
+          const dokHtml = item.dokumenUrl
+            ? `<a class="news-dok" href="${esc(item.dokumenUrl)}" target="_blank" rel="noopener noreferrer">📎 Unduh Dokumen: ${esc(item.dokumenNama || "Lampiran")}</a>`
             : "";
           html += `
             <div class="news-card">
               ${fotoHtml}
               <div class="news-header">
-                <h3 class="news-title">${item.judul}</h3>
-                <span class="news-date">📅 ${item.tanggal}</span>
+                <h3 class="news-title">${esc(item.judul)}</h3>
+                <span class="news-date">📅 ${esc(item.tanggal)}</span>
               </div>
-              <div class="news-content">${item.isi}</div>
+              <div class="news-content">${esc(item.isi)}</div>
+              ${dokHtml}
               <div class="news-footer">
-                <span>👤 Oleh: <strong>${item.penulis}</strong></span>
+                <span>👤 Oleh: <strong>${esc(item.penulis)}</strong></span>
                 <div class="action-buttons">
                   <button class="btn-edit" onclick="editBerita('${d.id}')">✏️ Edit</button>
                   <button class="btn-hapus" onclick="hapusPosting('${d.id}')">🗑️ Hapus</button>
@@ -285,6 +369,7 @@
         });
         container.innerHTML = html;
       } catch (err) {
+        console.error(err);
         container.innerHTML = `<p style="color:red;">Gagal memuat.</p>`;
       }
     }
@@ -358,6 +443,17 @@
           <label>Isi Berita</label>
           <textarea id="inputIsi" rows="6" required></textarea>
         </div>
+
+        <div class="form-group">
+          <label>📎 Dokumen Lampiran (Opsional, maks. 10 MB)</label>
+          <input type="file" id="inputDokumen" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onchange="handleDokChange(event)" />
+          <span class="help-text">Format: PDF, Word, Excel, PowerPoint. Anggota/siswa bisa mengunduhnya.</span>
+          <div id="dokInfoBox" class="dok-info-box">
+            <span class="dok-nama" id="dokNamaLabel"></span>
+            <button type="button" class="btn-hapus-foto" style="margin-top:0; flex-shrink:0;" onclick="hapusDokTerpilih()">🗑️ Hapus</button>
+          </div>
+        </div>
+
         <button type="submit" id="btnSubmitBerita" class="btn-submit">💾 Simpan</button>
         <button type="button" class="btn-batal" onclick="tutupModalBerita()">Batal</button>
       </form>
