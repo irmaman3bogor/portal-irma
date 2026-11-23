@@ -18,8 +18,17 @@
     input:focus, select:focus, textarea:focus { outline: none; border-color: #d4af37; }
     textarea { resize: vertical; min-height: 120px; }
     .help-text { font-size: 11px; color: #888; margin-top: 4px; display: block; }
+
+    /* Upload foto */
+    .foto-box { border: 2px dashed #ccc; border-radius: 10px; padding: 14px; text-align: center; background: #fafbfc; }
+    .foto-box input[type="file"] { border: none; padding: 6px; background: transparent; }
+    #fotoPreviewWrap { display: none; margin-top: 12px; position: relative; }
+    #fotoPreview { width: 100%; max-height: 240px; object-fit: cover; border-radius: 8px; }
+    .btn-hapus-foto { position: absolute; top: 8px; right: 8px; flex: none; width: auto; padding: 6px 12px; font-size: 12px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 700; }
+    #fotoInfo { font-size: 11px; color: #888; margin-top: 6px; }
+
     .btn-group { display: flex; gap: 10px; margin-top: 25px; }
-    button, .btn-back { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+    .btn-save, .btn-back { flex: 1; padding: 14px; border: none; border-radius: 8px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.2s; }
     .btn-save { background: #0a3622; color: #d4af37; }
     .btn-save:hover { background: #0d4a2e; transform: translateY(-1px); }
     .btn-save:disabled { opacity: 0.6; cursor: not-allowed; }
@@ -67,14 +76,27 @@
     </div>
 
     <div class="form-group">
+      <label>Foto (Opsional)</label>
+      <div class="foto-box">
+        <input type="file" id="fotoInput" accept="image/*">
+        <div id="fotoPreviewWrap">
+          <img id="fotoPreview" alt="Pratinjau foto">
+          <button type="button" class="btn-hapus-foto" onclick="hapusFoto()">✕ Hapus</button>
+        </div>
+        <div id="fotoInfo"></div>
+      </div>
+      <span class="help-text">Format JPG/PNG. Foto dikecilkan otomatis agar hemat penyimpanan.</span>
+    </div>
+
+    <div class="form-group">
       <label>Link Website (Opsional)</label>
       <input type="url" id="link" placeholder="https://...">
-      <span class="help-text">Biarkan kosong jika konten ini tidak memiliki link ke website lain.</span>
+      <span class="help-text">Isi hanya URL (diawali https://). Kosongkan jika tidak ada.</span>
     </div>
 
     <div class="btn-group">
       <a href="beranda.html" class="btn-back">← Kembali ke Beranda</a>
-      <button class="btn-save" onclick="simpanData()">Posting Sekarang 🚀</button>
+      <button class="btn-save" id="btnSave" onclick="simpanData()">Posting Sekarang 🚀</button>
     </div>
   </div>
 
@@ -94,17 +116,107 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
+    const alertBox = document.getElementById('alertBox');
+    const fotoInput = document.getElementById('fotoInput');
+    const fotoPreviewWrap = document.getElementById('fotoPreviewWrap');
+    const fotoPreview = document.getElementById('fotoPreview');
+    const fotoInfo = document.getElementById('fotoInfo');
+    let fotoData = ""; // hasil kompres (data URL)
+
+    function tampilError(pesan) {
+      alertBox.className = 'alert alert-error';
+      alertBox.textContent = pesan;
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // Kompres gambar: sisi terpanjang maks 900px, format JPEG
+    function kompresGambar(file, maxSide = 900, quality = 0.75) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onerror = () => reject(new Error("Gagal membaca file."));
+        reader.onload = () => {
+          const img = new Image();
+          img.onerror = () => reject(new Error("File bukan gambar yang valid."));
+          img.onload = () => {
+            let { width, height } = img;
+            const skala = Math.min(1, maxSide / Math.max(width, height));
+            width = Math.round(width * skala);
+            height = Math.round(height * skala);
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff'; // latar putih untuk PNG transparan
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+
+            let q = quality;
+            let hasil = canvas.toDataURL('image/jpeg', q);
+            while (hasil.length > 700000 && q > 0.3) { // jaga di bawah ~700 KB
+              q -= 0.1;
+              hasil = canvas.toDataURL('image/jpeg', q);
+            }
+            resolve(hasil);
+          };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    fotoInput.addEventListener('change', async () => {
+      const file = fotoInput.files[0];
+      if (!file) return;
+
+      if (!file.type.startsWith('image/')) {
+        tampilError('File harus berupa gambar (JPG/PNG).');
+        fotoInput.value = '';
+        return;
+      }
+      if (file.size > 10 * 1024 * 1024) {
+        tampilError('Ukuran foto terlalu besar (maksimal 10 MB).');
+        fotoInput.value = '';
+        return;
+      }
+
+      try {
+        fotoInfo.textContent = 'Memproses foto... ⏳';
+        fotoData = await kompresGambar(file);
+        fotoPreview.src = fotoData;
+        fotoPreviewWrap.style.display = 'block';
+        const kb = Math.round(fotoData.length * 0.75 / 1024);
+        fotoInfo.textContent = `Foto siap diunggah (±${kb} KB setelah dikompres).`;
+        alertBox.className = 'alert';
+      } catch (err) {
+        tampilError(err.message);
+        fotoInput.value = '';
+        fotoData = "";
+        fotoInfo.textContent = '';
+      }
+    });
+
+    window.hapusFoto = function() {
+      fotoData = "";
+      fotoInput.value = '';
+      fotoPreview.src = '';
+      fotoPreviewWrap.style.display = 'none';
+      fotoInfo.textContent = '';
+    };
+
     window.simpanData = async function() {
       const kategori = document.getElementById('kategori').value;
       const judul = document.getElementById('judul').value.trim();
       const isi = document.getElementById('isi').value.trim();
       const link = document.getElementById('link').value.trim();
-      const alertBox = document.getElementById('alertBox');
-      const btnSave = document.querySelector('.btn-save');
+      const btnSave = document.getElementById('btnSave');
 
       if (!judul || !isi) {
-        alertBox.className = 'alert alert-error';
-        alertBox.textContent = 'Judul dan Isi tidak boleh kosong!';
+        tampilError('Judul dan Isi tidak boleh kosong!');
+        return;
+      }
+      if (link && !/^https?:\/\/\S+$/.test(link)) {
+        tampilError('Link harus berupa URL saja, contoh: https://situs.com/artikel (tanpa spasi atau teks lain).');
         return;
       }
 
@@ -117,6 +229,7 @@
           judul: judul,
           isi: isi,
           link: link,
+          foto: fotoData,
           waktu: serverTimestamp()
         });
 
@@ -125,15 +238,16 @@
         document.getElementById('judul').value = '';
         document.getElementById('isi').value = '';
         document.getElementById('link').value = '';
+        window.hapusFoto();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
       } catch (error) {
         console.error(error);
-        alertBox.className = 'alert alert-error';
-        alertBox.textContent = '❌ Gagal memposting: ' + error.message;
+        tampilError('❌ Gagal memposting: ' + error.message);
       } finally {
         btnSave.textContent = 'Posting Sekarang 🚀';
         btnSave.disabled = false;
       }
-    }
+    };
   </script>
 </body>
 </html>
