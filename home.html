@@ -145,7 +145,6 @@
     }
     .content-card .title { font-weight: 700; color: #0a3622; font-size: 13px; margin-bottom: 4px; }
     .content-card .desc { font-size: 12.5px; color: #555; line-height: 1.5; white-space: pre-line; }
-    .content-card .meta { font-size: 11px; color: #999; margin-top: 4px; font-style: italic; }
 
     /* --- RESPONSIF HP --- */
     @media (max-width: 768px) {
@@ -185,7 +184,7 @@
 
     window.addEventListener("DOMContentLoaded", async () => {
       
-      // 1. Ambil Informasi Terbaru
+      // 1. Ambil Informasi Terbaru (Tetap pakai waktu)
       const containerInfo = document.getElementById("infoTerbaru");
       try {
         const qInfo = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
@@ -209,51 +208,54 @@
       } catch (err) { containerInfo.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`; }
 
       // Helper untuk render list konten (Kajian, Hasanah, Umum)
-          // ... (Bagian atas script Firebase tetap sama) ...
-
-    // Helper untuk render list konten (Kajian, Hasanah, Umum)
-    const renderList = (snap, containerId) => {
-      const container = document.getElementById(containerId);
-      if (snap.empty) {
-        container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
-        return;
-      }
-      let html = "";
-      snap.forEach(doc => {
-        const item = doc.data();
-        
-        // Cek apakah ada link
-        let linkButton = "";
-        if (item.link) {
-           linkButton = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; font-size:12px; font-weight:bold; color:#0a3622; text-decoration:underline;">🔗 Baca Selengkapnya ↗</a>`;
+      const renderList = (snap, containerId) => {
+        const container = document.getElementById(containerId);
+        if (snap.empty) {
+          container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
+          return;
         }
+        let html = "";
+        snap.forEach(doc => {
+          const item = doc.data();
+          
+          // Cek apakah ada link
+          let linkButton = "";
+          if (item.link) {
+             linkButton = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; font-size:12px; font-weight:bold; color:#0a3622; text-decoration:underline;">🔗 Baca Selengkapnya ↗</a>`;
+          }
 
-        html += `
-          <div class="content-card">
-            <div class="title">${item.judul}</div>
-            <div class="desc">${item.isi}</div>
-            ${linkButton}
-            <div class="meta">📅 ${item.tanggal || '-'}</div>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-    };
+          html += `
+            <div class="content-card">
+              <div class="title">${item.judul}</div>
+              <div class="desc">${item.isi}</div>
+              ${linkButton}
+            </div>
+          `;
+        });
+        container.innerHTML = html;
+      };
 
-    // ... (Bagian bawah script Firebase tetap sama) ...
-
-      // 3. Ambil Data Hasanah
+      // 2. Ambil Data Kajian (TANPA ORDER BY WAKTU)
       try {
-        const qHasanah = query(collection(db, "hasanah_irma"), orderBy("waktu", "desc"), limit(3));
+        const qKajian = query(collection(db, "kajian_irma"), limit(3));
+        const snapKajian = await getDocs(qKajian);
+        renderList(snapKajian, "listKajian");
+      } catch(e) { 
+        document.getElementById("listKajian").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
+      }
+
+      // 3. Ambil Data Hasanah (TANPA ORDER BY WAKTU)
+      try {
+        const qHasanah = query(collection(db, "hasanah_irma"), limit(3));
         const snapHasanah = await getDocs(qHasanah);
         renderList(snapHasanah, "listHasanah");
       } catch(e) { 
         document.getElementById("listHasanah").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
       }
 
-      // 4. Ambil Data Umum
+      // 4. Ambil Data Umum (TANPA ORDER BY WAKTU)
       try {
-        const qUmum = query(collection(db, "umum_irma"), orderBy("waktu", "desc"), limit(3));
+        const qUmum = query(collection(db, "umum_irma"), limit(3));
         const snapUmum = await getDocs(qUmum);
         renderList(snapUmum, "listUmum");
       } catch(e) { 
@@ -330,7 +332,6 @@
               <span style="font-size: 16px;">↗</span>
             </div>
             <div class="desc">Klik di sini untuk membaca artikel, khutbah, dan kajian Islami langsung dari situs resmi NU Online.</div>
-            <div class="meta">🔗 www.nu.or.id</div>
           </a>
           
           <div id="listKajian">
@@ -338,9 +339,9 @@
           </div>
         </div>
 
-        <!-- TAB 3: KASANAH KEISLAMAN (Dinamis Firebase) -->
-        <div id="tab-kasanah" class="tab-content">
-          <h3>✨ Kasanah Keislaman</h3>
+        <!-- TAB 3: HASANAH KEISLAMAN (Dinamis Firebase) -->
+        <div id="tab-hasanah" class="tab-content">
+          <h3>✨ Hasanah Keislaman</h3>
           <div id="listHasanah">
             <p style="color:#777; font-size:12px;">Memuat data...</p>
           </div>
