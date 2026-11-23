@@ -255,7 +255,7 @@
         <p>Sistem Informasi Organisasi Ikatan Remaja Masjid MAN 3 Bogor. Silakan akses menu di sebelah kiri untuk melihat Visi Misi, Informasi terbaru, dan Program Kerja kami.</p>
       </div>
 
-      <!-- PANEL INFO 4 TAB -->
+            <!-- PANEL INFO 4 TAB -->
       <div class="info-panel">
         <div class="tabs">
           <button class="tab active" onclick="showTab('sholat')">🕌 Sholat</button>
@@ -264,18 +264,17 @@
           <button class="tab" onclick="showTab('umum')">💡 Umum</button>
         </div>
 
-        <!-- TAB 1: JADWAL SHOLAT -->
+        <!-- TAB 1: JADWAL SHOLAT (Tetap hardcode) -->
         <div id="tab-sholat" class="tab-content active">
           <h3>🕌 Jadwal Sholat — Kab. Bogor</h3>
           <div class="sholat-grid" id="sholatGrid"></div>
           <div class="sholat-note">Sumber: Kemenag RI · 23 Nov 2026</div>
         </div>
 
-        <!-- TAB 2: KAJIAN ISLAMI -->
+        <!-- TAB 2: KAJIAN ISLAMI (Dinamis dari Firebase) -->
         <div id="tab-kajian" class="tab-content">
           <h3>📖 Kajian Islami</h3>
-          
-          <!-- Link ke NU Online (ditambahkan margin-bottom agar rapi) -->
+          <!-- Link NU Online tetap ada -->
           <a href="https://www.nu.or.id/" target="_blank" rel="noopener noreferrer" class="content-card" style="display: block; text-decoration: none; color: inherit; margin-bottom: 15px; border-left-color: #2a9d8f;">
             <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
               <span>Buka Kajian NU Online</span>
@@ -284,61 +283,26 @@
             <div class="desc">Klik di sini untuk membaca artikel, khutbah, dan kajian Islami langsung dari situs resmi NU Online.</div>
             <div class="meta">🔗 www.nu.or.id</div>
           </a>
-
-          <div class="content-card">
-            <div class="title">Kajian Rutin Ahad</div>
-            <div class="desc">Tafsir Surah Al-Mulk — bersama Ustadz Ahmad Fauzi, Lc.</div>
-            <div class="meta">📅 Ahad, 29 Nov 2026 · 08.00 WIB · Aula MAN 3 Bogor</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Kajian Akhwat</div>
-            <div class="desc">Fiqih Wanita: Thaharah & Sholat — bersama Ustadzah Nurul Hikmah</div>
-            <div class="meta">📅 Sabtu, 28 Nov 2026 · 13.00 WIB · Musala Putri</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Kultum Harian</div>
-            <div class="desc">Setiap ba'da Dzuhur di Musala Al-Ikhlas, bergilir antar kelas.</div>
-            <div class="meta">📅 Senin–Jumat · 12.15 WIB</div>
+          
+          <!-- Wadah Data Firebase -->
+          <div id="listKajian">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
           </div>
         </div>
 
-        <!-- TAB 3: HASANAH KEISLAMAN -->
+        <!-- TAB 3: HASANAH KEISLAMAN (Dinamis dari Firebase) -->
         <div id="tab-hasanah" class="tab-content">
           <h3>✨ Hasanah Keislaman</h3>
-          <div class="content-card">
-            <div class="title">Keutamaan Menuntut Ilmu</div>
-            <div class="desc">"Siapa yang menempuh jalan untuk mencari ilmu, niscaya Allah mudahkan baginya jalan ke surga."</div>
-            <div class="meta">HR. Muslim (2699)</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Amalan Ringan Berpahala Besar</div>
-            <div class="desc">"Siapa yang menunjukkan kepada kebaikan, baginya pahala seperti orang yang mengerjakannya."</div>
-            <div class="meta">HR. Muslim (1893)</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Mau'izhah Hasanah</div>
-            <div class="desc">Nasihat yang baik adalah yang disampaikan dengan lemah lembut, tanpa menyakiti hati.</div>
-            <div class="meta">QS. An-Nahl: 125</div>
+          <div id="listHasanah">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
           </div>
         </div>
 
-        <!-- TAB 4: PENGETAHUAN UMUM -->
+        <!-- TAB 4: PENGETAHUAN UMUM (Dinamis dari Firebase) -->
         <div id="tab-umum" class="tab-content">
           <h3>💡 Pengetahuan Umum</h3>
-          <div class="content-card">
-            <div class="title">Tahukah Kamu?</div>
-            <div class="desc">Kata "Aljabar" berasal dari kitab <em>Al-Jabr wa al-Muqabalah</em> karya ilmuwan Muslim Al-Khwarizmi (abad ke-9).</div>
-            <div class="meta">Matematika Islam</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Fakta Geografi</div>
-            <div class="desc">Kabupaten Bogor berbatasan langsung dengan Jakarta, Tangerang, Bekasi, Karawang, Cianjur, dan Sukabumi.</div>
-            <div class="meta">Jawa Barat</div>
-          </div>
-          <div class="content-card">
-            <div class="title">Sains & Al-Qur'an</div>
-            <div class="desc">Fenomena "gunung sebagai pasak bumi" disebut dalam QS. An-Naba: 7 — selaras dengan konsep isostasi geologi modern.</div>
-            <div class="meta">Sains Islam</div>
+          <div id="listUmum">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
           </div>
         </div>
       </div>
