@@ -217,7 +217,7 @@
   <!-- OVERLAY SAAT SIDEBAR DIBUKA DI HP -->
   <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-  <!-- SIDEBAR PUBLIK (HANYA 4 MENU) -->
+  <!-- SIDEBAR PUBLIK -->
   <div class="sidebar" id="sidebar">
     <div class="sidebar-header">
       <img src="logo.png" alt="Logo IRMA">
@@ -242,7 +242,6 @@
         <h1>Portal IRMA</h1>
       </div>
       <div>
-        <!-- TOMBOL LOGIN -->
         <a href="index.html" class="btn-login-top">🔐 Login Admin/Siswa</a>
       </div>
     </div>
@@ -256,9 +255,7 @@
         <p>Sistem Informasi Organisasi Ikatan Remaja Masjid MAN 3 Bogor. Silakan akses menu di sebelah kiri untuk melihat Visi Misi, Informasi terbaru, dan Program Kerja kami.</p>
       </div>
 
-      <!-- ============================================ -->
-      <!-- ===== PANEL INFO 4 TAB (BARU DITAMBAHKAN) === -->
-      <!-- ============================================ -->
+      <!-- PANEL INFO 4 TAB -->
       <div class="info-panel">
         <div class="tabs">
           <button class="tab active" onclick="showTab('sholat')">🕌 Sholat</button>
@@ -277,12 +274,17 @@
         <!-- TAB 2: KAJIAN ISLAMI -->
         <div id="tab-kajian" class="tab-content">
           <h3>📖 Kajian Islami</h3>
-          <!-- Kartu ini bisa diklik dan akan membuka NU Online di tab baru -->
-  <a href="https://www.nu.or.id/" target="_blank" rel="noopener noreferrer" class="content-card" style="display: block; text-decoration: none; color: inherit;">
-    <div class="title">Buka Kajian NU Online</div>
-    <div class="desc">Klik di sini untuk membaca artikel, khutbah, dan kajian Islami langsung dari situs resmi NU Online.</div>
-    <div class="meta">🔗 www.nu.or.id</div>
-  </a>
+          
+          <!-- Link ke NU Online (ditambahkan margin-bottom agar rapi) -->
+          <a href="https://www.nu.or.id/" target="_blank" rel="noopener noreferrer" class="content-card" style="display: block; text-decoration: none; color: inherit; margin-bottom: 15px; border-left-color: #2a9d8f;">
+            <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Buka Kajian NU Online</span>
+              <span style="font-size: 16px;">↗</span>
+            </div>
+            <div class="desc">Klik di sini untuk membaca artikel, khutbah, dan kajian Islami langsung dari situs resmi NU Online.</div>
+            <div class="meta">🔗 www.nu.or.id</div>
+          </a>
+
           <div class="content-card">
             <div class="title">Kajian Rutin Ahad</div>
             <div class="desc">Tafsir Surah Al-Mulk — bersama Ustadz Ahmad Fauzi, Lc.</div>
@@ -352,11 +354,13 @@
       </div>
 
     </div>
-
   </div>
 
-  <!-- SCRIPT TOGGLE SIDEBAR -->
+  <!-- ============================================== -->
+  <!-- SCRIPT TERPADU (SIDEBAR + TAB + JADWAL SHOLAT) -->
+  <!-- ============================================== -->
   <script>
+    // 1. Fungsi Buka/Tutup Sidebar (Mobile)
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
       const overlay = document.getElementById("sidebarOverlay");
@@ -368,19 +372,24 @@
       document.getElementById("sidebar").classList.remove("open");
       document.getElementById("sidebarOverlay").classList.remove("active");
     }
-  </script>
 
-  <!-- SCRIPT TAB + JADWAL SHOLAT -->
-  <script>
-    // ---- Tab switcher ----
-    window.showTab = function(tabName) {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    // 2. Fungsi Ganti Tab
+    function showTab(tabName) {
+      // Sembunyikan semua konten tab
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      document.querySelector(`.tab[onclick*="${tabName}"]`).classList.add('active');
-      document.getElementById(`tab-${tabName}`).classList.add('active');
-    };
+      // Hapus status aktif dari semua tombol tab
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      
+      // Tampilkan konten yang dipilih
+      const targetContent = document.getElementById('tab-' + tabName);
+      if (targetContent) targetContent.classList.add('active');
+      
+      // Beri status aktif ke tombol yang diklik
+      const targetButton = document.querySelector(`.tab[onclick*="'${tabName}'"]`);
+      if (targetButton) targetButton.classList.add('active');
+    }
 
-    // ---- Jadwal sholat Kab. Bogor 23 Nov 2026 (hardcode) ----
+    // 3. Fungsi Render Jadwal Sholat & Highlight
     const jadwalSholat = [
       { label: "Subuh",   time: "04:05" },
       { label: "Dzuhur",  time: "11:43" },
@@ -392,15 +401,19 @@
     function renderSholat() {
       const grid = document.getElementById("sholatGrid");
       if (!grid) return;
+      
       const now = new Date();
       const currentMinutes = now.getHours() * 60 + now.getMinutes();
-
       let nextIndex = -1;
+
       for (let i = 0; i < jadwalSholat.length; i++) {
         const [h, m] = jadwalSholat[i].time.split(":").map(Number);
-        if (h * 60 + m > currentMinutes) { nextIndex = i; break; }
+        if (h * 60 + m > currentMinutes) { 
+          nextIndex = i; 
+          break; 
+        }
       }
-      if (nextIndex === -1) nextIndex = 0; // lewat Isya → tandai Subuh besok
+      if (nextIndex === -1) nextIndex = 0;
 
       grid.innerHTML = jadwalSholat.map((s, i) => `
         <div class="sholat-item ${i === nextIndex ? 'next' : ''}">
@@ -410,8 +423,11 @@
       `).join("");
     }
 
-    renderSholat();
-    setInterval(renderSholat, 60000); // update highlight tiap menit
+    // Jalankan saat halaman dimuat
+    document.addEventListener("DOMContentLoaded", () => {
+      renderSholat();
+      setInterval(renderSholat, 60000); 
+    });
   </script>
 </body>
 </html>
