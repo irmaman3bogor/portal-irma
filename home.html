@@ -209,34 +209,38 @@
       } catch (err) { containerInfo.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`; }
 
       // Helper untuk render list konten (Kajian, Hasanah, Umum)
-      const renderList = (snap, containerId) => {
-        const container = document.getElementById(containerId);
-        if (snap.empty) {
-          container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
-          return;
-        }
-        let html = "";
-        snap.forEach(doc => {
-          const item = doc.data();
-          html += `
-            <div class="content-card">
-              <div class="title">${item.judul}</div>
-              <div class="desc">${item.isi}</div>
-              <div class="meta">📅 ${item.tanggal || '-'}</div>
-            </div>
-          `;
-        });
-        container.innerHTML = html;
-      };
+          // ... (Bagian atas script Firebase tetap sama) ...
 
-      // 2. Ambil Data Kajian
-      try {
-        const qKajian = query(collection(db, "kajian_irma"), orderBy("waktu", "desc"), limit(3));
-        const snapKajian = await getDocs(qKajian);
-        renderList(snapKajian, "listKajian");
-      } catch(e) { 
-        document.getElementById("listKajian").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; 
+    // Helper untuk render list konten (Kajian, Hasanah, Umum)
+    const renderList = (snap, containerId) => {
+      const container = document.getElementById(containerId);
+      if (snap.empty) {
+        container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
+        return;
       }
+      let html = "";
+      snap.forEach(doc => {
+        const item = doc.data();
+        
+        // Cek apakah ada link
+        let linkButton = "";
+        if (item.link) {
+           linkButton = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; font-size:12px; font-weight:bold; color:#0a3622; text-decoration:underline;">🔗 Baca Selengkapnya ↗</a>`;
+        }
+
+        html += `
+          <div class="content-card">
+            <div class="title">${item.judul}</div>
+            <div class="desc">${item.isi}</div>
+            ${linkButton}
+            <div class="meta">📅 ${item.tanggal || '-'}</div>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    };
+
+    // ... (Bagian bawah script Firebase tetap sama) ...
 
       // 3. Ambil Data Hasanah
       try {
