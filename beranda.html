@@ -52,6 +52,91 @@
     .info-meta { font-size: 11px; color: #888; margin-bottom: 10px; }
     .info-desc { font-size: 13px; color: #444; line-height: 1.5; white-space: pre-line; }
 
+    /* ============================================= */
+    /* ===== PANEL INFO 4 TAB (BARU DITAMBAHKAN) === */
+    /* ============================================= */
+    .info-panel {
+      background: white;
+      border-radius: 12px;
+      padding: 22px 24px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .tab {
+      flex: 1;
+      min-width: 90px;
+      padding: 10px 6px;
+      border: none;
+      border-radius: 8px;
+      background: #eef1f4;
+      color: #555;
+      font-size: 12.5px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.2s;
+      white-space: nowrap;
+    }
+    .tab.active { background: #0a3622; color: #fff; }
+    .tab:hover:not(.active) { background: #dde3e8; }
+
+    .tab-content { display: none; animation: fadeIn 0.3s ease; }
+    .tab-content.active { display: block; }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .tab-content h3 {
+      color: #0a3622;
+      font-size: 15px;
+      margin: 0 0 12px;
+      border-bottom: 2px solid #d4af37;
+      padding-bottom: 6px;
+      display: inline-block;
+    }
+
+    /* Jadwal sholat */
+    .sholat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+    }
+    .sholat-item {
+      background: #f8faf9;
+      border-radius: 8px;
+      padding: 10px 12px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-left: 4px solid #d4af37;
+    }
+    .sholat-item .label { font-weight: 600; color: #0a3622; font-size: 13px; }
+    .sholat-item .time { font-weight: 700; color: #0a3622; font-size: 15px; }
+    .sholat-item.next {
+      background: #fff8e1;
+      border-left-color: #f1c40f;
+      box-shadow: 0 2px 8px rgba(212,175,55,0.25);
+    }
+    .sholat-note { font-size: 11px; color: #888; margin-top: 10px; text-align: right; }
+
+    /* Kartu konten teks */
+    .content-card {
+      background: #f8faf9;
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      border-left: 4px solid #0a3622;
+    }
+    .content-card .title { font-weight: 700; color: #0a3622; font-size: 13px; margin-bottom: 4px; }
+    .content-card .desc { font-size: 12.5px; color: #555; line-height: 1.5; white-space: pre-line; }
+
     /* --- RESPONSIF HP --- */
     @media (max-width: 768px) {
       .sidebar { position: fixed; left: -260px; height: 100vh; }
@@ -61,10 +146,13 @@
       .top-header h1 { font-size: 16px; }
       .content-body { padding: 20px; }
       .welcome-box { padding: 20px; }
+      .info-panel { padding: 16px; }
+      .tab { font-size: 11.5px; padding: 9px 4px; }
+      .sholat-grid { grid-template-columns: 1fr 1fr; }
     }
   </style>
 
-  <!-- SCRIPT FIREBASE -->
+  <!-- SCRIPT FIREBASE TERPADU -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
     import { getFirestore, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
@@ -80,33 +168,78 @@
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
 
-    // Muat 3 berita terbaru saja untuk beranda
     window.addEventListener("DOMContentLoaded", async () => {
-      const container = document.getElementById("infoTerbaru");
+      
+      // 1. Ambil Informasi Terbaru
+      const containerInfo = document.getElementById("infoTerbaru");
       try {
-        const q = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
-        const snap = await getDocs(q);
-        
+        const qInfo = query(collection(db, "informasi_irma"), orderBy("waktu", "desc"), limit(3));
+        const snapInfo = await getDocs(qInfo);
+        if (snapInfo.empty) {
+          containerInfo.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`;
+        } else {
+          let html = "";
+          snapInfo.forEach(doc => {
+            const item = doc.data();
+            html += `
+              <div class="info-card">
+                <div class="info-title">${item.judul}</div>
+                <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
+                <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
+              </div>
+            `;
+          });
+          containerInfo.innerHTML = html;
+        }
+      } catch (err) { containerInfo.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`; }
+
+      // Helper untuk render list konten (Kajian, Hasanah, Umum)
+      const renderList = (snap, containerId) => {
+        const container = document.getElementById(containerId);
         if (snap.empty) {
-          container.innerHTML = `<p style="color:#777; font-size:14px;">Belum ada informasi terbaru.</p>`;
+          container.innerHTML = `<p style="color:#777; font-size:13px; font-style:italic;">Belum ada data.</p>`;
           return;
         }
-
         let html = "";
         snap.forEach(doc => {
           const item = doc.data();
+          
+          let linkButton = "";
+          if (item.link) {
+             linkButton = `<a href="${item.link}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:8px; font-size:12px; font-weight:bold; color:#0a3622; text-decoration:underline;">🔗 Baca Selengkapnya ↗</a>`;
+          }
+
           html += `
-            <div class="info-card">
-              <div class="info-title">${item.judul}</div>
-              <div class="info-meta">📅 ${item.tanggal} | 👤 ${item.penulis}</div>
-              <div class="info-desc">${item.isi.length > 150 ? item.isi.substring(0, 150) + '...' : item.isi}</div>
+            <div class="content-card">
+              <div class="title">${item.judul}</div>
+              <div class="desc">${item.isi}</div>
+              ${linkButton}
             </div>
           `;
         });
         container.innerHTML = html;
-      } catch (err) {
-        container.innerHTML = `<p style="color:red; font-size:14px;">Gagal memuat informasi.</p>`;
-      }
+      };
+
+      // 2. Ambil Data Kajian
+      try {
+        const qKajian = query(collection(db, "kajian_irma"), limit(3));
+        const snapKajian = await getDocs(qKajian);
+        renderList(snapKajian, "listKajian");
+      } catch(e) { document.getElementById("listKajian").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; }
+
+      // 3. Ambil Data Hasanah
+      try {
+        const qHasanah = query(collection(db, "hasanah_irma"), limit(3));
+        const snapHasanah = await getDocs(qHasanah);
+        renderList(snapHasanah, "listHasanah");
+      } catch(e) { document.getElementById("listHasanah").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; }
+
+      // 4. Ambil Data Umum
+      try {
+        const qUmum = query(collection(db, "umum_irma"), limit(3));
+        const snapUmum = await getDocs(qUmum);
+        renderList(snapUmum, "listUmum");
+      } catch(e) { document.getElementById("listUmum").innerHTML = `<p style="color:red; font-size:12px;">Error load data.</p>`; }
     });
   </script>
 </head>
@@ -120,10 +253,8 @@
       <p>MAN 3 BOGOR</p>
     </div>
     <div class="sidebar-menu">
-      <!-- MENU HOME MENGARAH KE BERANDA.HTML (FILE INI SENDIRI) -->
       <a href="beranda.html" class="active"><span>🏠</span> Home</a>
       <a href="profil-irma.html"><span>📖</span> Profil IRMA</a>
-      <!-- MENU INFORMASI MENGARAH KE ADMIN-INFORMASI.HTML -->
       <a href="admin-informasi.html"><span>📢</span> Informasi</a>
       <a href="admin-kehadiran.html"><span>📋</span> Kehadiran</a>
       <a href="data-anggota.html"><span>👥</span> Data Anggota</a>
@@ -157,6 +288,57 @@
         <p>Sistem Informasi Organisasi Rohis MAN 3 Bogor. Silakan pilih menu di sebelah kiri untuk mulai mengelola data organisasi, keuangan, kehadiran, dan program kerja.</p>
       </div>
 
+      <!-- ============================================ -->
+      <!-- ===== PANEL INFO 4 TAB (BARU DITAMBAHKAN) === -->
+      <!-- ============================================ -->
+      <div class="info-panel">
+        <div class="tabs">
+          <button class="tab active" onclick="showTab('sholat')">🕌 Sholat</button>
+          <button class="tab" onclick="showTab('kajian')">📖 Kajian</button>
+          <button class="tab" onclick="showTab('hasanah')">✨ Hasanah</button>
+          <button class="tab" onclick="showTab('umum')">💡 Umum</button>
+        </div>
+
+        <!-- TAB 1: JADWAL SHOLAT -->
+        <div id="tab-sholat" class="tab-content active">
+          <h3>🕌 Jadwal Sholat — Kab. Bogor</h3>
+          <div class="sholat-grid" id="sholatGrid"></div>
+          <div class="sholat-note">Sumber: Kemenag RI · 23 Nov 2026</div>
+        </div>
+
+        <!-- TAB 2: KAJIAN ISLAMI -->
+        <div id="tab-kajian" class="tab-content">
+          <h3>📖 Kajian Islami</h3>
+          <a href="https://www.nu.or.id/" target="_blank" rel="noopener noreferrer" class="content-card" style="display: block; text-decoration: none; color: inherit; margin-bottom: 15px; border-left-color: #2a9d8f;">
+            <div class="title" style="display: flex; justify-content: space-between; align-items: center;">
+              <span>Buka Kajian NU Online</span>
+              <span style="font-size: 16px;">↗</span>
+            </div>
+            <div class="desc">Klik di sini untuk membaca artikel, khutbah, dan kajian Islami langsung dari situs resmi NU Online.</div>
+          </a>
+          
+          <div id="listKajian">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
+          </div>
+        </div>
+
+        <!-- TAB 3: HASANAH KEISLAMAN -->
+        <div id="tab-hasanah" class="tab-content">
+          <h3>✨ Hasanah Keislaman</h3>
+          <div id="listHasanah">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
+          </div>
+        </div>
+
+        <!-- TAB 4: PENGETAHUAN UMUM -->
+        <div id="tab-umum" class="tab-content">
+          <h3>💡 Pengetahuan Umum</h3>
+          <div id="listUmum">
+            <p style="color:#777; font-size:12px;">Memuat data...</p>
+          </div>
+        </div>
+      </div>
+
       <!-- SECTION INFORMASI TERBARU -->
       <div class="section-title">
         <h3>📢 Informasi Terbaru</h3>
@@ -175,7 +357,7 @@
   <script>
     // 1. Proteksi Halaman (Cek Login)
     if (localStorage.getItem("irmaLogin") !== "true") {
-      window.location.href = "index.html"; // Lempar ke login jika belum masuk
+      window.location.href = "index.html";
     }
 
     // 2. Fungsi Logout
@@ -191,6 +373,56 @@
     function toggleSidebar() {
       document.getElementById("sidebar").classList.toggle("open");
     }
+
+    // 4. Fungsi Tab & Jadwal Sholat
+    function showTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+      
+      const targetContent = document.getElementById('tab-' + tabName);
+      if (targetContent) targetContent.classList.add('active');
+      
+      const targetButton = document.querySelector(`.tab[onclick*="'${tabName}'"]`);
+      if (targetButton) targetButton.classList.add('active');
+    }
+
+    const jadwalSholat = [
+      { label: "Subuh",   time: "04:05" },
+      { label: "Dzuhur",  time: "11:43" },
+      { label: "Ashar",   time: "15:05" },
+      { label: "Maghrib", time: "17:56" },
+      { label: "Isya",    time: "19:09" }
+    ];
+
+    function renderSholat() {
+      const grid = document.getElementById("sholatGrid");
+      if (!grid) return;
+      
+      const now = new Date();
+      const currentMinutes = now.getHours() * 60 + now.getMinutes();
+      let nextIndex = -1;
+
+      for (let i = 0; i < jadwalSholat.length; i++) {
+        const [h, m] = jadwalSholat[i].time.split(":").map(Number);
+        if (h * 60 + m > currentMinutes) { 
+          nextIndex = i; 
+          break; 
+        }
+      }
+      if (nextIndex === -1) nextIndex = 0;
+
+      grid.innerHTML = jadwalSholat.map((s, i) => `
+        <div class="sholat-item ${i === nextIndex ? 'next' : ''}">
+          <span class="label">${s.label}</span>
+          <span class="time">${s.time}</span>
+        </div>
+      `).join("");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderSholat();
+      setInterval(renderSholat, 60000); 
+    });
   </script>
 </body>
 </html>
